@@ -12,6 +12,7 @@
         .touch-target { min-height: 48px; }
         input, select { font-size: 16px; }
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+        .label-text { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; }
     </style>
 </head>
 <body class="bg-slate-900">
@@ -27,10 +28,13 @@
         const App = () => {
             const [customers, setCustomers] = useState([]);
             const [customerName, setCustomerName] = useState('');
+            const [customerNumber, setCustomerNumber] = useState('');
             const [editingId, setEditingId] = useState(null);
+            const [inputMode, setInputMode] = useState('machines'); // 'machines' oder 'employees'
             const [formData, setFormData] = useState({
                 industry: 'Maschinenbau',
                 machines: '15',
+                employees: '',
                 material: 'Stahl',
                 shifts: '1'
             });
@@ -42,9 +46,19 @@
                     'Aerospace': { factor: 1.3, quote: 0.5 },
                     'Werkzeug-/Formenbau': { factor: 1.05, quote: 0.4 }
                 },
-                materials: { 'Aluminium': 0.65, 'Stahl': 1, 'Edelstahl': 1.15, 'Titan': 1.5 },
-                shifts: { '1': 1, '2': 1.7, '3': 2.4 },
-                baseValue: 5000
+                materials: { 
+                    'Kunststoff': 0.60,
+                    'Aluminium': 0.65,
+                    'Guss': 0.95,
+                    'Stahl': 1.00,
+                    'Vergütungsstahl': 1.20,
+                    'Edelstahl': 1.30,
+                    'Titan': 1.90,
+                    'Inconel/Ni-Basis': 2.50
+                },
+                shifts: { '1': 1.00, '2': 1.70, '3': 2.35 },
+                baseValue: 5000,
+                employeesPerMachine: 1.5
             };
 
             useEffect(() => {
@@ -57,11 +71,24 @@
             }, [customers]);
 
             const calculate = () => {
-                const machines = parseFloat(formData.machines);
-                if (!machines || machines === 0) return null;
+                let machineCount;
 
+                if (inputMode === 'machines') {
+                    // Direkteingabe: Maschinenanzahl
+                    machineCount = parseFloat(formData.machines);
+                    if (!machineCount || machineCount === 0) return null;
+                } else {
+                    // Schätzung: Mitarbeiterzahl
+                    const employees = parseFloat(formData.employees);
+                    if (!employees || employees === 0) return null;
+                    
+                    const quote = data.industries[formData.industry].quote;
+                    machineCount = (employees * quote) / data.employeesPerMachine;
+                }
+
+                // Hauptformel: Potenzial = Maschinen × Basiswert × Schicht × Material × Branche
                 const potential = Math.round(
-                    machines * data.baseValue * 
+                    machineCount * data.baseValue * 
                     data.shifts[formData.shifts] * 
                     data.materials[formData.material] * 
                     data.industries[formData.industry].factor / 100
@@ -74,7 +101,13 @@
                 else if (potential >= 5000) { klasse = 'D'; farbe = 'from-orange-500 to-orange-600'; }
                 else { klasse = 'E'; farbe = 'from-gray-500 to-gray-600'; }
 
-                return { potential, klasse, farbe };
+                return { 
+                    potential, 
+                    klasse, 
+                    farbe, 
+                    machineCount: parseFloat(machineCount.toFixed(1)),
+                    calculationMode: inputMode === 'machines' ? 'direkt' : 'geschätzt'
+                };
             };
 
             const handleSave = () => {
@@ -84,16 +117,22 @@
                 }
                 const calc = calculate();
                 if (!calc) {
-                    alert('Maschinen eingeben!');
+                    alert(`${inputMode === 'machines' ? 'Maschinenanzahl' : 'Mitarbeiterzahl'} eingeben!`);
                     return;
                 }
+
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('de-DE');
 
                 const customer = {
                     id: editingId || Date.now().toString(),
                     name: customerName,
+                    number: customerNumber,
                     ...formData,
                     ...calc,
-                    savedAt: new Date().toLocaleString('de-DE')
+                    inputMode,
+                    savedAt: dateStr,
+                    timestamp: now.getTime()
                 };
 
                 if (editingId) {
@@ -103,13 +142,22 @@
                 }
 
                 setCustomerName('');
-                setFormData({ industry: 'Maschinenbau', machines: '15', material: 'Stahl', shifts: '1' });
+                setCustomerNumber('');
+                setFormData({ industry: 'Maschinenbau', machines: '15', employees: '', material: 'Stahl', shifts: '1' });
                 setEditingId(null);
             };
 
             const handleEdit = (c) => {
                 setCustomerName(c.name);
-                setFormData({ industry: c.industry, machines: c.machines, material: c.material, shifts: c.shifts });
+                setCustomerNumber(c.number || '');
+                setInputMode(c.inputMode || 'machines');
+                setFormData({ 
+                    industry: c.industry, 
+                    machines: c.machines || '15', 
+                    employees: c.employees || '',
+                    material: c.material, 
+                    shifts: c.shifts 
+                });
                 setEditingId(c.id);
                 window.scrollTo(0, 0);
             };
@@ -121,6 +169,7 @@
             };
 
             const calc = calculate();
+            const sortedCustomers = [...customers].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
@@ -137,47 +186,116 @@
 
                     <div className="max-w-2xl mx-auto p-4 space-y-4">
                         
+                        {/* INPUT MODE TOGGLE */}
+                        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                            <p className="label-text text-slate-400 mb-3">📊 Eingabe-Modus</p>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        setInputMode('machines');
+                                        setFormData({...formData, machines: '15', employees: ''});
+                                    }}
+                                    className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm touch-target transition ${
+                                        inputMode === 'machines'
+                                            ? 'bg-orange-600 text-white'
+                                            : 'bg-slate-700 text-slate-300 border border-slate-600'
+                                    }`}
+                                >
+                                    ⚙️ Maschinen bekannt
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setInputMode('employees');
+                                        setFormData({...formData, machines: '', employees: ''});
+                                    }}
+                                    className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm touch-target transition ${
+                                        inputMode === 'employees'
+                                            ? 'bg-orange-600 text-white'
+                                            : 'bg-slate-700 text-slate-300 border border-slate-600'
+                                    }`}
+                                >
+                                    👥 Mitarbeiterzahl
+                                </button>
+                            </div>
+                        </div>
+
                         {/* INPUT SECTION */}
                         <div className="bg-slate-800 rounded-xl p-4 space-y-3 border border-slate-700">
-                            <select
-                                value={formData.industry}
-                                onChange={(e) => setFormData({...formData, industry: e.target.value})}
-                                className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                <option value="Maschinenbau">🏭 Maschinenbau</option>
-                                <option value="Lohnfertigung">🏭 Lohnfertigung</option>
-                                <option value="Aerospace">🏭 Aerospace</option>
-                                <option value="Werkzeug-/Formenbau">🏭 Werkzeug-/Formenbau</option>
-                            </select>
+                            
+                            {/* Branche */}
+                            <div>
+                                <p className="label-text text-slate-400 mb-2">🏭 Branche</p>
+                                <select
+                                    value={formData.industry}
+                                    onChange={(e) => setFormData({...formData, industry: e.target.value})}
+                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                >
+                                    <option value="Maschinenbau">Maschinenbau (Quote: 25%)</option>
+                                    <option value="Lohnfertigung">Lohnfertigung (Quote: 60%)</option>
+                                    <option value="Aerospace">Aerospace (Quote: 50%)</option>
+                                    <option value="Werkzeug-/Formenbau">Werkzeug-/Formenbau (Quote: 40%)</option>
+                                </select>
+                            </div>
 
-                            <input
-                                type="number"
-                                placeholder="⚙️ Maschinen"
-                                value={formData.machines}
-                                onChange={(e) => setFormData({...formData, machines: e.target.value})}
-                                className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            />
+                            {/* Maschinen oder Mitarbeiter */}
+                            {inputMode === 'machines' ? (
+                                <div>
+                                    <p className="label-text text-slate-400 mb-2">⚙️ CNC-Maschinen (Anzahl)</p>
+                                    <input
+                                        type="number"
+                                        placeholder="z.B. 15"
+                                        value={formData.machines}
+                                        onChange={(e) => setFormData({...formData, machines: e.target.value})}
+                                        className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                    <p className="text-xs text-slate-400 mt-1">Direkte Eingabe bekannter Maschinen</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p className="label-text text-slate-400 mb-2">👥 Gesamtmitarbeiter (Anzahl)</p>
+                                    <input
+                                        type="number"
+                                        placeholder="z.B. 80"
+                                        value={formData.employees}
+                                        onChange={(e) => setFormData({...formData, employees: e.target.value})}
+                                        className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    />
+                                    <p className="text-xs text-slate-400 mt-1">App schätzt Maschinen mit Branchenquote & 1,5 MA/Maschine</p>
+                                </div>
+                            )}
 
-                            <select
-                                value={formData.material}
-                                onChange={(e) => setFormData({...formData, material: e.target.value})}
-                                className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                <option value="Aluminium">🔩 Aluminium</option>
-                                <option value="Stahl">🔩 Stahl</option>
-                                <option value="Edelstahl">🔩 Edelstahl</option>
-                                <option value="Titan">🔩 Titan</option>
-                            </select>
+                            {/* Material */}
+                            <div>
+                                <p className="label-text text-slate-400 mb-2">🔩 Hauptmaterial (Bearbeitungsaufwand)</p>
+                                <select
+                                    value={formData.material}
+                                    onChange={(e) => setFormData({...formData, material: e.target.value})}
+                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                >
+                                    <option value="Kunststoff">Kunststoff (0,60)</option>
+                                    <option value="Aluminium">Aluminium (0,65)</option>
+                                    <option value="Guss">Guss (0,95)</option>
+                                    <option value="Stahl">Stahl (1,00) — Referenz</option>
+                                    <option value="Vergütungsstahl">Vergütungsstahl (1,20)</option>
+                                    <option value="Edelstahl">Edelstahl (1,30)</option>
+                                    <option value="Titan">Titan (1,90)</option>
+                                    <option value="Inconel/Ni-Basis">Inconel/Ni-Basis (2,50)</option>
+                                </select>
+                            </div>
 
-                            <select
-                                value={formData.shifts}
-                                onChange={(e) => setFormData({...formData, shifts: e.target.value})}
-                                className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                <option value="1">⏰ 1 Schicht (1.0×)</option>
-                                <option value="2">⏰ 2 Schichten (1.7×)</option>
-                                <option value="3">⏰ 3 Schichten (2.4×)</option>
-                            </select>
+                            {/* Schichten */}
+                            <div>
+                                <p className="label-text text-slate-400 mb-2">⏰ Schichtmodell (Nutzungsintensität)</p>
+                                <select
+                                    value={formData.shifts}
+                                    onChange={(e) => setFormData({...formData, shifts: e.target.value})}
+                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                >
+                                    <option value="1">1 Schicht (1,00×) — Standard-Faktor</option>
+                                    <option value="2">2 Schichten (1,70×) — Erhöhter Einsatz</option>
+                                    <option value="3">3 Schichten (2,35×) — Maximaler Einsatz</option>
+                                </select>
+                            </div>
                         </div>
 
                         {/* RESULT */}
@@ -187,20 +305,34 @@
                                 <p className="large-number">€ {(calc.potential / 1000).toFixed(0)}k</p>
                                 <p className="text-2xl font-bold mt-4">Klasse {calc.klasse}</p>
                                 <p className="text-sm opacity-90 mt-1">{calc.potential.toLocaleString('de-DE')} €</p>
+                                <p className="text-xs opacity-75 mt-3">
+                                    {calc.machineCount} Maschinen ({calc.calculationMode})
+                                </p>
                             </div>
                         )}
 
                         {/* SAVE SECTION */}
                         <div className="bg-slate-800 rounded-xl p-4 space-y-3 border border-slate-700">
-                            <input
-                                type="text"
-                                placeholder="👤 Kundenname"
-                                value={customerName}
-                                onChange={(e) => setCustomerName(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSave()}
-                                className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                autoFocus={editingId !== null}
-                            />
+                            <div>
+                                <p className="label-text text-slate-400 mb-2">👤 Kundenname *</p>
+                                <input
+                                    type="text"
+                                    placeholder="z.B. Mayer GmbH"
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                            </div>
+                            <div>
+                                <p className="label-text text-slate-400 mb-2">🔢 Kundennummer (optional)</p>
+                                <input
+                                    type="text"
+                                    placeholder="z.B. K-12345"
+                                    value={customerNumber}
+                                    onChange={(e) => setCustomerNumber(e.target.value)}
+                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                            </div>
                             <button
                                 onClick={handleSave}
                                 className="w-full bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold py-3 rounded-lg transition touch-target shadow-lg"
@@ -211,7 +343,9 @@
                                 <button
                                     onClick={() => {
                                         setCustomerName('');
-                                        setFormData({ industry: 'Maschinenbau', machines: '15', material: 'Stahl', shifts: '1' });
+                                        setCustomerNumber('');
+                                        setFormData({ industry: 'Maschinenbau', machines: '15', employees: '', material: 'Stahl', shifts: '1' });
+                                        setInputMode('machines');
                                         setEditingId(null);
                                     }}
                                     className="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 rounded-lg transition touch-target"
@@ -222,11 +356,11 @@
                         </div>
 
                         {/* CUSTOMERS LIST */}
-                        {customers.length > 0 && (
+                        {sortedCustomers.length > 0 && (
                             <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-                                <h2 className="text-white font-bold mb-3">📋 Kunden ({customers.length})</h2>
+                                <h2 className="text-white font-bold mb-3">📋 Kunden ({sortedCustomers.length})</h2>
                                 <div className="space-y-2">
-                                    {customers.map(c => (
+                                    {sortedCustomers.map(c => (
                                         <div
                                             key={c.id}
                                             onClick={() => handleEdit(c)}
@@ -235,7 +369,8 @@
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
                                                     <h3 className="font-bold text-sm">{c.name}</h3>
-                                                    <p className="text-xs opacity-75">{c.industry}</p>
+                                                    <p className="text-xs opacity-75">{c.number ? `#${c.number}` : 'Keine Nummer'} • {c.industry}</p>
+                                                    <p className="text-xs opacity-60 mt-1">📅 {c.savedAt} • {c.machineCount} CNC ({c.calculationMode})</p>
                                                 </div>
                                                 <button
                                                     onClick={(e) => {
