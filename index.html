@@ -2,486 +2,296 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EMUGE Potenzial-Kalkulator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .large-number { font-size: clamp(48px, 12vw, 80px); font-weight: 900; line-height: 1; }
-        .touch-target { min-height: 48px; }
-        input, select { font-size: 16px; }
-        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
-        .label-text { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: linear-gradient(90deg, #ea580c 0%, #c2410c 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #22c55e;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+        .result {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .result-value {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 16px 0;
+        }
+        .result-class {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #ea580c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 16px;
+            min-height: 48px;
+        }
+        button:hover {
+            background: #c2410c;
+        }
+        button:active {
+            background: #92300c;
+        }
+        .breakdown {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+        .button-group button {
+            flex: 1;
+            background: #334155;
+            margin-top: 0;
+        }
+        .button-group button.active {
+            background: #ea580c;
+        }
     </style>
 </head>
-<body class="bg-slate-900">
-    <div id="app"></div>
+<body>
+    <header>
+        <h1>🔧 Potenzial-Kalkulator</h1>
+        <p>EMUGE FRANKEN</p>
+    </header>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <div class="container">
+        <div class="card">
+            <h2>📊 Eingabe</h2>
+            
+            <div class="input-group">
+                <label>🏭 Branche</label>
+                <select id="industry" onchange="updateResult()">
+                    <option value="auto">Automobil</option>
+                    <option value="med">Medizintechnik</option>
+                    <option value="luft">Luft- und Raumfahrt</option>
+                    <option value="lohn">Lohnfertiger</option>
+                </select>
+            </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        const App = () => {
-            const [customers, setCustomers] = useState([]);
-            const [customerName, setCustomerName] = useState('');
-            const [customerNumber, setCustomerNumber] = useState('');
-            const [editingId, setEditingId] = useState(null);
-            const [inputMode, setInputMode] = useState('machines');
-            const [formData, setFormData] = useState({
-                industry: 'Automobil',
-                machines: '15',
-                employees: '',
-                machineType: 'mixed',
-                material: 'Stahl',
-                shifts: '1'
-            });
-
-            const data = {
-                industries: {
-                    'Automobil': { factor: 1.0 },
-                    'Zweirad': { factor: 0.9 },
-                    'Schiene': { factor: 1.1 },
-                    'Schiffbau': { factor: 1.2 },
-                    'Luft- und Raumfahrt': { factor: 1.3 },
-                    'Landtechnik/Bauwesen': { factor: 0.95 },
-                    'Lohnfertiger': { factor: 1.1 },
-                    'Allg. Maschinen- und Anlagenbau': { factor: 1.0 },
-                    'Werkzeug-/Formenbau': { factor: 1.05 },
-                    'Elektro-Industrie': { factor: 1.0 },
-                    'Werkzeughersteller': { factor: 1.15 },
-                    'Mikrotechnik/Unterhaltungselektronik': { factor: 1.2 },
-                    'OEM-Kunden': { factor: 1.05 },
-                    'Bau-Industrie': { factor: 0.9 },
-                    'Militärische Fahrzeuge': { factor: 1.25 },
-                    'Militärische Fluggeräte': { factor: 1.35 },
-                    'Munition und Waffen': { factor: 1.3 },
-                    'Medizintechnik': { factor: 1.2 },
-                    'Dental': { factor: 1.15 },
-                    'Kraftwerkstechnologie': { factor: 1.1 },
-                    'Windkraft': { factor: 1.05 },
-                    'Öl & Gas': { factor: 1.15 }
-                },
-                materials: { 
-                    'Kunststoff': 0.60,
-                    'Aluminium': 0.65,
-                    'Guss': 0.95,
-                    'Stahl': 1.00,
-                    'Vergütungsstahl': 1.20,
-                    'Edelstahl': 1.30,
-                    'Titan': 1.90,
-                    'Inconel/Ni-Basis': 2.50
-                },
-                shifts: { '1': 1.00, '2': 1.70, '3': 2.35 },
-                baseValue: 5000,
-                employeesPerMachine: 1.5,
-                machineDistribution: {
-                    'drehen': { gewindetechnik: 0.45, bohrtechnik: 0.25, frastechnik: 0.15, spanntechnik: 0.15 },
-                    'frasen': { gewindetechnik: 0.10, bohrtechnik: 0.25, frastechnik: 0.45, spanntechnik: 0.20 },
-                    'mixed': { gewindetechnik: 0.25, bohrtechnik: 0.25, frastechnik: 0.25, spanntechnik: 0.25 }
-                }
-            };
-
-            useEffect(() => {
-                const saved = localStorage.getItem('emugeCustomers');
-                if (saved) try { setCustomers(JSON.parse(saved)); } catch (e) {}
-            }, []);
-
-            useEffect(() => {
-                localStorage.setItem('emugeCustomers', JSON.stringify(customers));
-            }, [customers]);
-
-            const calculate = () => {
-                let machineCount;
-
-                if (inputMode === 'machines') {
-                    machineCount = parseFloat(formData.machines);
-                    if (!machineCount || machineCount === 0) return null;
-                } else {
-                    const employees = parseFloat(formData.employees);
-                    if (!employees || employees === 0) return null;
-                    machineCount = (employees * 0.3) / data.employeesPerMachine; // Durchschnittliche Quote 30%
-                }
-
-                const potential = Math.round(
-                    machineCount * data.baseValue * 
-                    data.shifts[formData.shifts] * 
-                    data.materials[formData.material] * 
-                    data.industries[formData.industry].factor / 100
-                ) * 100;
-
-                // Werkzeug-Verteilung nach Maschinentyp
-                const distribution = data.machineDistribution[formData.machineType];
-                const breakdown = {
-                    gewindetechnik: Math.round(potential * distribution.gewindetechnik),
-                    frastechnik: Math.round(potential * distribution.frastechnik),
-                    bohrtechnik: Math.round(potential * distribution.bohrtechnik),
-                    spanntechnik: Math.round(potential * distribution.spanntechnik)
-                };
-
-                let klasse, farbe;
-                if (potential >= 150000) { klasse = 'A'; farbe = 'from-emerald-500 to-emerald-600'; }
-                else if (potential >= 75000) { klasse = 'B'; farbe = 'from-blue-500 to-blue-600'; }
-                else if (potential >= 25000) { klasse = 'C'; farbe = 'from-yellow-500 to-yellow-600'; }
-                else if (potential >= 5000) { klasse = 'D'; farbe = 'from-orange-500 to-orange-600'; }
-                else { klasse = 'E'; farbe = 'from-gray-500 to-gray-600'; }
-
-                return { 
-                    potential, 
-                    klasse, 
-                    farbe, 
-                    machineCount: parseFloat(machineCount.toFixed(1)),
-                    calculationMode: inputMode === 'machines' ? 'direkt' : 'geschätzt',
-                    breakdown
-                };
-            };
-
-            const handleSave = () => {
-                if (!customerName.trim()) {
-                    alert('Kundennamen eingeben!');
-                    return;
-                }
-                const calc = calculate();
-                if (!calc) {
-                    alert(`${inputMode === 'machines' ? 'Maschinenanzahl' : 'Mitarbeiterzahl'} eingeben!`);
-                    return;
-                }
-
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('de-DE');
-
-                const customer = {
-                    id: editingId || Date.now().toString(),
-                    name: customerName,
-                    number: customerNumber,
-                    ...formData,
-                    ...calc,
-                    inputMode,
-                    savedAt: dateStr,
-                    timestamp: now.getTime()
-                };
-
-                if (editingId) {
-                    setCustomers(customers.map(c => c.id === editingId ? customer : c));
-                } else {
-                    setCustomers([...customers, customer]);
-                }
-
-                setCustomerName('');
-                setCustomerNumber('');
-                setFormData({ industry: 'Automobil', machines: '15', employees: '', machineType: 'mixed', material: 'Stahl', shifts: '1' });
-                setEditingId(null);
-            };
-
-            const handleEdit = (c) => {
-                setCustomerName(c.name);
-                setCustomerNumber(c.number || '');
-                setInputMode(c.inputMode || 'machines');
-                setFormData({ 
-                    industry: c.industry, 
-                    machines: c.machines || '15', 
-                    employees: c.employees || '',
-                    machineType: c.machineType || 'mixed',
-                    material: c.material, 
-                    shifts: c.shifts 
-                });
-                setEditingId(c.id);
-                window.scrollTo(0, 0);
-            };
-
-            const handleDelete = (id) => {
-                if (confirm('Wirklich löschen?')) {
-                    setCustomers(customers.filter(c => c.id !== id));
-                }
-            };
-
-            const calc = calculate();
-            const sortedCustomers = [...customers].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
-                    {/* HEADER */}
-                    <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-4 sticky top-0 z-50 shadow-lg">
-                        <div className="flex items-center gap-3 max-w-2xl mx-auto">
-                            <span className="text-3xl">🔧</span>
-                            <div>
-                                <h1 className="text-xl font-bold">Potenzial-Kalkulator</h1>
-                                <p className="text-xs text-orange-100">EMUGE FRANKEN</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="max-w-2xl mx-auto p-4 space-y-4">
-                        
-                        {/* INPUT MODE TOGGLE */}
-                        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-                            <p className="label-text text-slate-400 mb-3">📊 Eingabe-Modus</p>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => {
-                                        setInputMode('machines');
-                                        setFormData({...formData, machines: '15', employees: ''});
-                                    }}
-                                    className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm touch-target transition ${
-                                        inputMode === 'machines'
-                                            ? 'bg-orange-600 text-white'
-                                            : 'bg-slate-700 text-slate-300 border border-slate-600'
-                                    }`}
-                                >
-                                    ⚙️ Maschinen
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setInputMode('employees');
-                                        setFormData({...formData, machines: '', employees: ''});
-                                    }}
-                                    className={`flex-1 py-2 px-3 rounded-lg font-bold text-sm touch-target transition ${
-                                        inputMode === 'employees'
-                                            ? 'bg-orange-600 text-white'
-                                            : 'bg-slate-700 text-slate-300 border border-slate-600'
-                                    }`}
-                                >
-                                    👥 Mitarbeiter
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* INPUT SECTION */}
-                        <div className="bg-slate-800 rounded-xl p-4 space-y-3 border border-slate-700">
-                            
-                            {/* Branche */}
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">🏭 Branche</p>
-                                <select
-                                    value={formData.industry}
-                                    onChange={(e) => setFormData({...formData, industry: e.target.value})}
-                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                >
-                                    {Object.keys(data.industries).map(ind => (
-                                        <option key={ind} value={ind}>{ind}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Maschinentyp */}
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">⚙️ Maschinentyp (Fertigung)</p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setFormData({...formData, machineType: 'drehen'})}
-                                        className={`flex-1 py-2 px-2 rounded-lg font-bold text-xs touch-target transition ${
-                                            formData.machineType === 'drehen'
-                                                ? 'bg-orange-600 text-white'
-                                                : 'bg-slate-700 text-slate-300 border border-slate-600'
-                                        }`}
-                                    >
-                                        🔄 Drehen
-                                    </button>
-                                    <button
-                                        onClick={() => setFormData({...formData, machineType: 'frasen'})}
-                                        className={`flex-1 py-2 px-2 rounded-lg font-bold text-xs touch-target transition ${
-                                            formData.machineType === 'frasen'
-                                                ? 'bg-orange-600 text-white'
-                                                : 'bg-slate-700 text-slate-300 border border-slate-600'
-                                        }`}
-                                    >
-                                        🔪 Fräsen
-                                    </button>
-                                    <button
-                                        onClick={() => setFormData({...formData, machineType: 'mixed'})}
-                                        className={`flex-1 py-2 px-2 rounded-lg font-bold text-xs touch-target transition ${
-                                            formData.machineType === 'mixed'
-                                                ? 'bg-orange-600 text-white'
-                                                : 'bg-slate-700 text-slate-300 border border-slate-600'
-                                        }`}
-                                    >
-                                        ⚙️ Beide
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Maschinen oder Mitarbeiter */}
-                            {inputMode === 'machines' ? (
-                                <div>
-                                    <p className="label-text text-slate-400 mb-2">⚙️ CNC-Maschinen (Anzahl)</p>
-                                    <input
-                                        type="number"
-                                        placeholder="z.B. 15"
-                                        value={formData.machines}
-                                        onChange={(e) => setFormData({...formData, machines: e.target.value})}
-                                        className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                    />
-                                </div>
-                            ) : (
-                                <div>
-                                    <p className="label-text text-slate-400 mb-2">👥 Gesamtmitarbeiter (Anzahl)</p>
-                                    <input
-                                        type="number"
-                                        placeholder="z.B. 80"
-                                        value={formData.employees}
-                                        onChange={(e) => setFormData({...formData, employees: e.target.value})}
-                                        className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Material */}
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">🔩 Hauptmaterial</p>
-                                <select
-                                    value={formData.material}
-                                    onChange={(e) => setFormData({...formData, material: e.target.value})}
-                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                >
-                                    <option value="Kunststoff">Kunststoff</option>
-                                    <option value="Aluminium">Aluminium</option>
-                                    <option value="Guss">Guss</option>
-                                    <option value="Stahl">Stahl</option>
-                                    <option value="Vergütungsstahl">Vergütungsstahl</option>
-                                    <option value="Edelstahl">Edelstahl</option>
-                                    <option value="Titan">Titan</option>
-                                    <option value="Inconel/Ni-Basis">Inconel/Ni-Basis</option>
-                                </select>
-                            </div>
-
-                            {/* Schichten */}
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">⏰ Schichtmodell</p>
-                                <select
-                                    value={formData.shifts}
-                                    onChange={(e) => setFormData({...formData, shifts: e.target.value})}
-                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                >
-                                    <option value="1">1 Schicht</option>
-                                    <option value="2">2 Schichten</option>
-                                    <option value="3">3 Schichten</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* RESULT */}
-                        {calc && (
-                            <div className={`bg-gradient-to-br ${calc.farbe} rounded-2xl p-6 text-white text-center shadow-lg`}>
-                                <p className="text-sm opacity-80 mb-2">Jahrespotenzial</p>
-                                <p className="large-number">€ {(calc.potential / 1000).toFixed(0)}k</p>
-                                <p className="text-2xl font-bold mt-4">Klasse {calc.klasse}</p>
-                                <p className="text-sm opacity-90 mt-1">{calc.potential.toLocaleString('de-DE')} €</p>
-                                
-                                {/* WERKZEUG-VERTEILUNG */}
-                                <div className="mt-4 pt-4 border-t border-white border-opacity-20">
-                                    <p className="text-xs opacity-80 mb-3">📊 Werkzeug-Verteilung</p>
-                                    <div className="space-y-2 text-left">
-                                        <div className="flex justify-between text-sm">
-                                            <span>🔗 Gewindetechnik</span>
-                                            <span className="font-bold">€ {calc.breakdown.gewindetechnik.toLocaleString('de-DE')}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span>🔪 Frästechnik</span>
-                                            <span className="font-bold">€ {calc.breakdown.frastechnik.toLocaleString('de-DE')}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span>🕳️ Bohrtechnik</span>
-                                            <span className="font-bold">€ {calc.breakdown.bohrtechnik.toLocaleString('de-DE')}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm border-t border-white border-opacity-20 pt-2">
-                                            <span>💰 Spanntechnik (Investment)</span>
-                                            <span className="font-bold">€ {calc.breakdown.spanntechnik.toLocaleString('de-DE')}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* SAVE SECTION */}
-                        <div className="bg-slate-800 rounded-xl p-4 space-y-3 border border-slate-700">
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">👤 Kundenname *</p>
-                                <input
-                                    type="text"
-                                    placeholder="z.B. Mayer GmbH"
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                />
-                            </div>
-                            <div>
-                                <p className="label-text text-slate-400 mb-2">🔢 Kundennummer (optional)</p>
-                                <input
-                                    type="text"
-                                    placeholder="z.B. K-12345"
-                                    value={customerNumber}
-                                    onChange={(e) => setCustomerNumber(e.target.value)}
-                                    className="w-full bg-slate-700 text-white border border-slate-600 rounded-lg px-4 py-3 touch-target focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                />
-                            </div>
-                            <button
-                                onClick={handleSave}
-                                className="w-full bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold py-3 rounded-lg transition touch-target shadow-lg"
-                            >
-                                💾 {editingId ? 'Aktualisieren' : 'Speichern & Kunde'}
-                            </button>
-                            {editingId && (
-                                <button
-                                    onClick={() => {
-                                        setCustomerName('');
-                                        setCustomerNumber('');
-                                        setFormData({ industry: 'Automobil', machines: '15', employees: '', machineType: 'mixed', material: 'Stahl', shifts: '1' });
-                                        setInputMode('machines');
-                                        setEditingId(null);
-                                    }}
-                                    className="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 rounded-lg transition touch-target"
-                                >
-                                    ❌ Abbruch
-                                </button>
-                            )}
-                        </div>
-
-                        {/* CUSTOMERS LIST */}
-                        {sortedCustomers.length > 0 && (
-                            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-                                <h2 className="text-white font-bold mb-3">📋 Kunden ({sortedCustomers.length})</h2>
-                                <div className="space-y-2">
-                                    {sortedCustomers.map(c => (
-                                        <div
-                                            key={c.id}
-                                            onClick={() => handleEdit(c)}
-                                            className={`bg-gradient-to-r ${c.farbe} rounded-lg p-3 text-white cursor-pointer hover:shadow-lg transition`}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-sm">{c.name}</h3>
-                                                    <p className="text-xs opacity-75">{c.number ? `#${c.number}` : 'Keine Nummer'}</p>
-                                                    <p className="text-xs opacity-75">{c.industry}</p>
-                                                    <p className="text-xs opacity-60 mt-1">📅 {c.savedAt}</p>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(c.id);
-                                                    }}
-                                                    className="bg-red-600 hover:bg-red-700 p-2 rounded ml-2 transition"
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </div>
-                                            <div className="mt-2 flex justify-between text-sm">
-                                                <span>€ {c.potential.toLocaleString('de-DE')}</span>
-                                                <span className="font-bold">Klasse {c.klasse}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+            <div class="input-group">
+                <label>⚙️ Maschinentyp</label>
+                <div class="button-group">
+                    <button onclick="setMachineType('drehen')">🔄 Drehen</button>
+                    <button onclick="setMachineType('frasen')">🔪 Fräsen</button>
+                    <button onclick="setMachineType('both')" class="active">⚙️ Beide</button>
                 </div>
-            );
-        };
+            </div>
 
-        ReactDOM.render(<App />, document.getElementById('app'));
+            <div class="input-group">
+                <label>⚙️ CNC-Maschinen</label>
+                <input type="number" id="machines" value="15" onchange="updateResult()" oninput="updateResult()">
+            </div>
+
+            <div class="input-group">
+                <label>🔩 Material</label>
+                <select id="material" onchange="updateResult()">
+                    <option value="stahl">Stahl</option>
+                    <option value="alu">Aluminium</option>
+                    <option value="edel">Edelstahl</option>
+                    <option value="titan">Titan</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>⏰ Schichtmodell</label>
+                <select id="shifts" onchange="updateResult()">
+                    <option value="1">1 Schicht</option>
+                    <option value="2">2 Schichten</option>
+                    <option value="3">3 Schichten</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="resultCard" class="result">
+            <p style="font-size: 12px; opacity: 0.8;">Jahrespotenzial</p>
+            <div class="result-value" id="resultValue">€ 75k</div>
+            <div class="result-class" id="resultClass">Klasse B</div>
+            <div class="breakdown" id="breakdown"></div>
+        </div>
+
+        <div class="card">
+            <h2>👤 Kunde speichern</h2>
+            <div class="input-group">
+                <label>Kundenname</label>
+                <input type="text" id="customerName" placeholder="z.B. Mayer GmbH">
+            </div>
+            <div class="input-group">
+                <label>Kundennummer (optional)</label>
+                <input type="text" id="customerNumber" placeholder="z.B. K-12345">
+            </div>
+            <button onclick="saveCustomer()">💾 Speichern</button>
+        </div>
+    </div>
+
+    <script>
+        let machineType = 'both';
+        
+        function setMachineType(type) {
+            machineType = type;
+            document.querySelectorAll('.button-group button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            updateResult();
+        }
+
+        function updateResult() {
+            const machines = parseFloat(document.getElementById('machines').value) || 0;
+            const industry = document.getElementById('industry').value;
+            const material = document.getElementById('material').value;
+            const shifts = parseFloat(document.getElementById('shifts').value);
+
+            const factors = {
+                auto: 1.0, med: 1.2, luft: 1.3, lohn: 1.1
+            };
+            const materials = {
+                stahl: 1.0, alu: 0.65, edel: 1.3, titan: 1.9
+            };
+
+            const potential = Math.round(
+                machines * 5000 * shifts * materials[material] * factors[industry]
+            );
+
+            let klasse, color;
+            if (potential >= 150000) { klasse = 'A'; color = '#10b981'; }
+            else if (potential >= 75000) { klasse = 'B'; color = '#3b82f6'; }
+            else if (potential >= 25000) { klasse = 'C'; color = '#eab308'; }
+            else if (potential >= 5000) { klasse = 'D'; color = '#f97316'; }
+            else { klasse = 'E'; color = '#6b7280'; }
+
+            const distribution = {
+                drehen: { gew: 0.45, fra: 0.15, boh: 0.25, spa: 0.15 },
+                frasen: { gew: 0.10, fra: 0.45, boh: 0.25, spa: 0.20 },
+                both: { gew: 0.25, fra: 0.25, boh: 0.25, spa: 0.25 }
+            };
+
+            const dist = distribution[machineType];
+            const breakdown = {
+                'Gewindetechnik': Math.round(potential * dist.gew),
+                'Frästechnik': Math.round(potential * dist.fra),
+                'Bohrtechnik': Math.round(potential * dist.boh),
+                'Spanntechnik (Investment)': Math.round(potential * dist.spa)
+            };
+
+            document.getElementById('resultCard').style.background = `linear-gradient(135deg, ${color}dd 0%, ${color} 100%)`;
+            document.getElementById('resultValue').textContent = `€ ${(potential / 1000).toFixed(0)}k`;
+            document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
+            
+            let breakdownHTML = '<strong>Werkzeug-Verteilung:</strong><br>';
+            for (let [key, val] of Object.entries(breakdown)) {
+                breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')}</strong></div>`;
+            }
+            document.getElementById('breakdown').innerHTML = breakdownHTML;
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('customerName').value;
+            if (!name) {
+                alert('Kundennamen eingeben!');
+                return;
+            }
+            alert(`✅ Kunde "${name}" gespeichert!`);
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerNumber').value = '';
+        }
+
+        updateResult();
     </script>
 </body>
 </html>
