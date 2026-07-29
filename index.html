@@ -387,9 +387,45 @@
                 alert('Kundennamen eingeben!');
                 return;
             }
-            alert(`✅ Kunde "${name}" gespeichert!`);
-            document.getElementById('customerName').value = '';
-            document.getElementById('customerNumber').value = '';
+
+            // Potenzial aus dem Display extrahieren
+            const potenzialText = document.getElementById('resultValue').textContent;
+            const potenzialMatch = potenzialText.match(/(\d+)/);
+            const potenzial = potenzialMatch ? parseInt(potenzialMatch[1]) * 1000 : 0;
+
+            // Alle Daten sammeln
+            const data = {
+                kundenname: document.getElementById('customerName').value,
+                kundennummer: document.getElementById('customerNumber').value,
+                branche: document.getElementById('industry').value,
+                drehen: parseFloat(document.getElementById('drehen').value) || 0,
+                frasen: parseFloat(document.getElementById('frasen').value) || 0,
+                material: document.getElementById('material').value,
+                shifts: document.getElementById('shifts').value,
+                sonderSpt: parseInt(document.getElementById('sonderSpt').value) || 0,
+                standardSpt: document.getElementById('standardSpt').value,
+                potenzial: potenzial,
+                klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
+            };
+
+            // An Google Apps Script senden
+            fetch('https://script.google.com/macros/s/AKfycbxG_WQj3x4-hT0ze9wYojM_zvDS23Ap4t54h3RWo9Ve0Z-oIUtppTfjNdvbaRKAuo8q/exec', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert(`✅ Kunde "${name}" in Google Sheets gespeichert!`);
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerNumber').value = '';
+                } else {
+                    alert(`❌ Fehler: ${result.message}`);
+                }
+            })
+            .catch(error => {
+                alert(`❌ Fehler beim Speichern: ${error.message}`);
+            });
         }
 
         updateResult();
