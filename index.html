@@ -342,14 +342,15 @@
             </div>
 
             <div class="input-group">
-                <label>🔗 Standard SPT (Evo Grip)</label>
+                <label>🔗 Standard SPT - Zusätzliche Spanner</label>
                 <select id="standardSpt" onchange="updateResult()">
-                    <option value="5-10">5 bis 10 Evo Grip</option>
-                    <option value="10-15">10 bis 15 Evo Grip</option>
-                    <option value="15-20">15 bis 20 Evo Grip</option>
-                    <option value="20-30">20 bis 30 Evo Grip</option>
-                    <option value="30+">mehr als 30 Evo Grip</option>
+                    <option value="0">Keine zusätzlichen Spanner</option>
+                    <option value="2">2 zusätzliche Spanner</option>
+                    <option value="3">3 zusätzliche Spanner</option>
+                    <option value="4">4 zusätzliche Spanner</option>
+                    <option value="5">5 zusätzliche Spanner</option>
                 </select>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">ℹ️ Pro Fräsmaschine: 1x Evo Grip (automatisch)</p>
             </div>
         </div>
 
@@ -417,7 +418,11 @@
             const industry = document.getElementById('industry').value;
             const shifts = parseFloat(document.getElementById('shifts').value);
             const sonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
-            const standardSpt = document.getElementById('standardSpt').value;
+            const additionalSpanner = parseInt(document.getElementById('standardSpt').value) || 0;
+            
+            // Automatische Evo Grip Berechnung
+            const baseEvoGrip = frasen; // Pro Fräsmaschine 1 Evo Grip
+            const totalEvoGrip = baseEvoGrip + additionalSpanner;
             
             // Zusätzliche Soner SPT von Schleifmaschinen
             const schleifSpt = schleifen * 5000;
@@ -519,12 +524,12 @@
             // Spanntechnik separat
             breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK (Investition):</div>`;
             if (sonderSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT</span><strong>€ ${breakdown['Sonder SPT'].toLocaleString('de-DE')}</strong></div>`;
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT</span><strong>€ ${sonderSpt.toLocaleString('de-DE')}</strong></div>`;
             }
             if (schleifSpt > 0) {
                 breakdownHTML += `<div class="breakdown-item"><span>Schleifmaschinen SPT (${schleifen}x à €5.000)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
             }
-            breakdownHTML += `<div class="breakdown-item"><span>Standard SPT (${breakdown['Standard SPT (Evo Grip)']}) </span><strong>mit Evo Grip</strong></div>`;
+            breakdownHTML += `<div class="breakdown-item"><span>Standard SPT (Evo Grip)</span><strong>${totalEvoGrip} Stück (${baseEvoGrip} auto + ${additionalSpanner} extra)</strong></div>`;
             breakdownHTML += `</div>`;
             
             // Maschinenanteil
@@ -560,7 +565,7 @@
                           (document.getElementById('material3').value && document.getElementById('percent3').value > 0 ? ` / ${document.getElementById('percent3').value}% ${document.querySelector(`#material3 option[value="${document.getElementById('material3').value}"]`).textContent}` : ""),
                 shifts: document.getElementById('shifts').value,
                 sonderSpt: parseInt(document.getElementById('sonderSpt').value) || 0,
-                standardSpt: document.getElementById('standardSpt').value,
+                standardSpt: `${parseFloat(document.getElementById('frasen').value) || 0} + ${parseInt(document.getElementById('standardSpt').value) || 0} = ${(parseFloat(document.getElementById('frasen').value) || 0) + (parseInt(document.getElementById('standardSpt').value) || 0)} Evo Grip`,
                 potenzial: potenzial,
                 klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
             };
