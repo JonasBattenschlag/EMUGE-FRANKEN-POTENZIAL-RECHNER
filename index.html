@@ -84,6 +84,42 @@
             border-color: #ea580c;
             box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
         }
+        .material-section {
+            background: rgba(234, 88, 12, 0.05);
+            border-left: 3px solid #ea580c;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .material-item {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .material-item label {
+            margin-bottom: 4px;
+        }
+        .percent-warning {
+            background: #ef4444;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        .percent-warning.show {
+            display: block;
+        }
+        .percent-info {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
         .result {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border-radius: 12px;
@@ -221,17 +257,66 @@
             </div>
 
             <div class="input-group">
-                <label>🔩 Material</label>
-                <select id="material" onchange="updateResult()">
-                    <option value="kunst">Kunststoff</option>
-                    <option value="alu">Aluminium</option>
-                    <option value="guss">Guss</option>
-                    <option value="stahl">Stahl</option>
-                    <option value="verguet">Vergütungsstahl</option>
-                    <option value="edel">Edelstahl</option>
-                    <option value="titan">Titan</option>
-                    <option value="inconel">Inconel/Ni-Basis</option>
-                </select>
+                <label>⚙️ Schleifmaschinen (nur Sonder SPT)</label>
+                <input type="number" id="schleifen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
+            </div>
+
+            <!-- MATERIAL SECTION -->
+            <div class="material-section">
+                <label style="display: block; margin-bottom: 12px; color: #fbbf24;">🔩 Material (bis zu 3)</label>
+                
+                <!-- Material 1 -->
+                <div class="material-item">
+                    <label>Material 1</label>
+                    <select id="material1" onchange="updateResult()">
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl" selected>Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent1" value="100" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 2 -->
+                <div class="material-item">
+                    <label>Material 2 (optional)</label>
+                    <select id="material2" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent2" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 3 -->
+                <div class="material-item">
+                    <label>Material 3 (optional)</label>
+                    <select id="material3" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent3" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <div id="percentWarning" class="percent-warning">⚠️ Prozente müssen zusammen 100% ergeben!</div>
+                <div class="percent-info">ℹ️ <span id="percentInfo">100%</span> gesamt</div>
             </div>
 
             <div class="input-group">
@@ -293,19 +378,68 @@
         function updateResult() {
             const drehen = parseFloat(document.getElementById('drehen').value) || 0;
             const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const schleifen = parseFloat(document.getElementById('schleifen').value) || 0;
             const totalMachines = drehen + frasen;
 
-            if (totalMachines === 0) {
+            if (totalMachines === 0 && schleifen === 0) {
                 document.getElementById('resultValue').textContent = '€ 0';
                 document.getElementById('resultClass').textContent = 'Keine Maschinen';
                 return;
             }
 
+            // Nur Schleifmaschinen → direkt zu Sonder SPT
+            if (totalMachines === 0 && schleifen > 0) {
+                const schleifSpt = schleifen * 5000;
+                const sonderSptValue = parseInt(document.getElementById('sonderSpt').value) || 0;
+                const totalSpt = schleifSpt + sonderSptValue;
+                
+                let klasse, color;
+                if (totalSpt >= 150000) { klasse = 'A'; color = '#10b981'; }
+                else if (totalSpt >= 75000) { klasse = 'B'; color = '#3b82f6'; }
+                else if (totalSpt >= 25000) { klasse = 'C'; color = '#eab308'; }
+                else if (totalSpt >= 5000) { klasse = 'D'; color = '#f97316'; }
+                else { klasse = 'E'; color = '#6b7280'; }
+
+                document.getElementById('resultCard').style.background = `linear-gradient(135deg, ${color}dd 0%, ${color} 100%)`;
+                document.getElementById('resultValue').textContent = `€ ${(totalSpt / 1000).toFixed(0)}k`;
+                document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
+                
+                let breakdownHTML = '<strong>⚙️ Schleifmaschinen (nur Sonder SPT):</strong><br>';
+                breakdownHTML += `<div class="breakdown-item"><span>${schleifen}x Schleifmaschine à € 5.000</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+                if (sonderSptValue > 0) {
+                    breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${sonderSptValue.toLocaleString('de-DE')}</strong></div>`;
+                }
+                breakdownHTML += `<div class="machine-ratio">⚙️ Schleifmaschinen: ${schleifen}</div>`;
+                document.getElementById('breakdown').innerHTML = breakdownHTML;
+                return;
+            }
+
             const industry = document.getElementById('industry').value;
-            const material = document.getElementById('material').value;
             const shifts = parseFloat(document.getElementById('shifts').value);
             const sonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
             const standardSpt = document.getElementById('standardSpt').value;
+            
+            // Zusätzliche Soner SPT von Schleifmaschinen
+            const schleifSpt = schleifen * 5000;
+
+            // Material-Auswahl und Prozente
+            const mat1 = document.getElementById('material1').value;
+            const percent1 = parseFloat(document.getElementById('percent1').value) || 0;
+            const mat2 = document.getElementById('material2').value;
+            const percent2 = parseFloat(document.getElementById('percent2').value) || 0;
+            const mat3 = document.getElementById('material3').value;
+            const percent3 = parseFloat(document.getElementById('percent3').value) || 0;
+
+            const totalPercent = percent1 + percent2 + percent3;
+            document.getElementById('percentInfo').textContent = totalPercent + '%';
+
+            // Warnung wenn nicht 100%
+            const warningEl = document.getElementById('percentWarning');
+            if (totalPercent !== 100) {
+                warningEl.classList.add('show');
+            } else {
+                warningEl.classList.remove('show');
+            }
 
             const factors = {
                 auto: 1.0, zweirad: 0.9, schiene: 1.1, schiff: 1.2, luft: 1.3, land: 0.95,
@@ -319,9 +453,15 @@
                 edel: 1.30, titan: 1.90, inconel: 2.50
             };
 
+            // Gewichteter Materialfaktor
+            let weightedMaterialFactor = 0;
+            if (mat1) weightedMaterialFactor += (materials[mat1] || 1) * (percent1 / 100);
+            if (mat2) weightedMaterialFactor += (materials[mat2] || 1) * (percent2 / 100);
+            if (mat3) weightedMaterialFactor += (materials[mat3] || 1) * (percent3 / 100);
+
             // VERBRAUCHSWERKZEUGE (Basis-Potenzial)
             const basePotential = Math.round(
-                totalMachines * 5000 * shifts * materials[material] * factors[industry]
+                totalMachines * 5000 * shifts * weightedMaterialFactor * factors[industry]
             );
 
             // Intelligente Verteilung
@@ -343,8 +483,9 @@
                 'Standard SPT (Evo Grip)': standardSpt
             };
 
-            // GESAMT-POTENZIAL = Verbrauch + Sonder SPT
-            const totalPotential = basePotential + sonderSpt;
+            // GESAMT-POTENZIAL = Verbrauch + Sonder SPT + Schleif-SPT
+            const totalSpt = sonderSpt + schleifSpt;
+            const totalPotential = basePotential + totalSpt;
 
             let klasse, color;
             if (totalPotential >= 150000) { klasse = 'A'; color = '#10b981'; }
@@ -367,16 +508,31 @@
                 }
             }
 
+            // Material-Info
+            let materialInfo = '';
+            if (mat1) materialInfo += `${percent1}% ${document.querySelector(`#material1 option[value="${mat1}"]`).textContent}`;
+            if (mat2 && percent2 > 0) materialInfo += ` / ${percent2}% ${document.querySelector(`#material2 option[value="${mat2}"]`).textContent}`;
+            if (mat3 && percent3 > 0) materialInfo += ` / ${percent3}% ${document.querySelector(`#material3 option[value="${mat3}"]`).textContent}`;
+
+            breakdownHTML += `<div class="material-ratio">📦 Material: ${materialInfo}<br>Gewichteter Faktor: ${weightedMaterialFactor.toFixed(2)}</div>`;
+
             // Spanntechnik separat
             breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK (Investition):</div>`;
             if (sonderSpt > 0) {
                 breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT</span><strong>€ ${breakdown['Sonder SPT'].toLocaleString('de-DE')}</strong></div>`;
             }
+            if (schleifSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Schleifmaschinen SPT (${schleifen}x à €5.000)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
             breakdownHTML += `<div class="breakdown-item"><span>Standard SPT (${breakdown['Standard SPT (Evo Grip)']}) </span><strong>mit Evo Grip</strong></div>`;
             breakdownHTML += `</div>`;
             
             // Maschinenanteil
-            breakdownHTML += `<div class="machine-ratio">🔄 Drehen: ${(drehAnteil * 100).toFixed(0)}% | 🔪 Fräsen: ${(fraesAnteil * 100).toFixed(0)}%</div>`;
+            let machineInfo = `🔄 Drehen: ${(drehAnteil * 100).toFixed(0)}% | 🔪 Fräsen: ${(fraesAnteil * 100).toFixed(0)}%`;
+            if (schleifen > 0) {
+                machineInfo += ` | ⚙️ Schleifen: ${schleifen}x`;
+            }
+            breakdownHTML += `<div class="machine-ratio">${machineInfo}</div>`;
             
             document.getElementById('breakdown').innerHTML = breakdownHTML;
         }
@@ -388,19 +544,20 @@
                 return;
             }
 
-            // Potenzial aus dem Display extrahieren
             const potenzialText = document.getElementById('resultValue').textContent;
             const potenzialMatch = potenzialText.match(/(\d+)/);
             const potenzial = potenzialMatch ? parseInt(potenzialMatch[1]) * 1000 : 0;
 
-            // Alle Daten sammeln
             const data = {
                 kundenname: document.getElementById('customerName').value,
                 kundennummer: document.getElementById('customerNumber').value,
                 branche: document.getElementById('industry').value,
                 drehen: parseFloat(document.getElementById('drehen').value) || 0,
                 frasen: parseFloat(document.getElementById('frasen').value) || 0,
-                material: document.getElementById('material').value,
+                schleifen: parseFloat(document.getElementById('schleifen').value) || 0,
+                material: `${document.getElementById('percent1').value}% ${document.querySelector(`#material1 option[value="${document.getElementById('material1').value}"]`).textContent}` +
+                          (document.getElementById('material2').value && document.getElementById('percent2').value > 0 ? ` / ${document.getElementById('percent2').value}% ${document.querySelector(`#material2 option[value="${document.getElementById('material2').value}"]`).textContent}` : "") +
+                          (document.getElementById('material3').value && document.getElementById('percent3').value > 0 ? ` / ${document.getElementById('percent3').value}% ${document.querySelector(`#material3 option[value="${document.getElementById('material3').value}"]`).textContent}` : ""),
                 shifts: document.getElementById('shifts').value,
                 sonderSpt: parseInt(document.getElementById('sonderSpt').value) || 0,
                 standardSpt: document.getElementById('standardSpt').value,
@@ -408,7 +565,6 @@
                 klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
             };
 
-            // An Google Apps Script senden
             fetch('https://script.google.com/macros/s/AKfycbxG_WQj3x4-hT0ze9wYojM_zvDS23Ap4t54h3RWo9Ve0Z-oIUtppTfjNdvbaRKAuo8q/exec', {
                 method: 'POST',
                 body: JSON.stringify(data)
