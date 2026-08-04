@@ -247,17 +247,17 @@
 
             <div class="input-row">
                 <div class="input-group">
-                    <label>🔄 Drehmaschinen</label>
+                    <label>🔄 CNC-Drehmaschinen</label>
                     <input type="number" id="drehen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
                 </div>
                 <div class="input-group">
-                    <label>🔪 Fräsmaschinen</label>
+                    <label>🔪 CNC-Fräsmaschinen</label>
                     <input type="number" id="frasen" value="15" min="0" onchange="updateResult()" oninput="updateResult()">
                 </div>
             </div>
 
             <div class="input-group">
-                <label>⚙️ Schleifmaschinen (nur Sonder SPT)</label>
+                <label>⚙️ CNC-Schleifmaschinen</label>
                 <input type="number" id="schleifen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
             </div>
 
@@ -328,29 +328,15 @@
                 </select>
             </div>
 
-            <div class="section-header">💰 Spanntechnik</div>
-
             <div class="input-group">
-                <label>🔗 Sonder SPT</label>
-                <select id="sonderSpt" onchange="updateResult()">
-                    <option value="0">Kein Potenzial</option>
-                    <option value="15000">15 bis 30.000€</option>
-                    <option value="30000">30 bis 50.000€</option>
-                    <option value="50000">50 bis 100.000€</option>
-                    <option value="100000">mehr als 100.000€</option>
-                </select>
+                <label>🔗 Sonder SPT (Euro-Bedarf)</label>
+                <input type="number" id="sonderSpt" value="0" min="0" onchange="updateResult()" oninput="updateResult()" placeholder="€ Euro">
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">ℹ️ Automatisch +€1.500 pro Drehmaschine und Schleifmaschine</p>
             </div>
 
             <div class="input-group">
-                <label>🔗 Standard SPT - Zusätzliche Spanner</label>
-                <select id="standardSpt" onchange="updateResult()">
-                    <option value="0">Keine zusätzlichen Spanner</option>
-                    <option value="2">2 zusätzliche Spanner</option>
-                    <option value="3">3 zusätzliche Spanner</option>
-                    <option value="4">4 zusätzliche Spanner</option>
-                    <option value="5">5 zusätzliche Spanner</option>
-                </select>
-                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">ℹ️ Pro Fräsmaschine: 1x Evo Grip (automatisch)</p>
+                <label>🔗 Haupt Wettbewerb (Evo Grip)</label>
+                <input type="text" id="evoCompetitor" placeholder="z.B. SCHUNK, JACOB, ROHM" onchange="updateResult()" oninput="updateResult()">
             </div>
         </div>
 
@@ -390,9 +376,10 @@
 
             // Nur Schleifmaschinen → direkt zu Sonder SPT
             if (totalMachines === 0 && schleifen > 0) {
-                const schleifSpt = schleifen * 5000;
-                const sonderSptValue = parseInt(document.getElementById('sonderSpt').value) || 0;
-                const totalSpt = schleifSpt + sonderSptValue;
+                const schleifSpt = schleifen * 1500;
+                const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+                const autoSonderSpt = 1500; // Automatisch für Schleifen
+                const totalSpt = schleifSpt + manualSonderSpt + autoSonderSpt;
                 
                 let klasse, color;
                 if (totalSpt >= 150000) { klasse = 'A'; color = '#10b981'; }
@@ -405,27 +392,31 @@
                 document.getElementById('resultValue').textContent = `€ ${(totalSpt / 1000).toFixed(0)}k`;
                 document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
                 
-                let breakdownHTML = '<strong>⚙️ Schleifmaschinen (nur Sonder SPT):</strong><br>';
-                breakdownHTML += `<div class="breakdown-item"><span>${schleifen}x Schleifmaschine à € 5.000</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
-                if (sonderSptValue > 0) {
-                    breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${sonderSptValue.toLocaleString('de-DE')}</strong></div>`;
+                let breakdownHTML = '<strong>⚙️ CNC-Schleifmaschinen:</strong><br>';
+                breakdownHTML += `<div class="breakdown-item"><span>${schleifen}x CNC-Schleifmaschine à € 1.500</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (automatisch)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+                if (manualSonderSpt > 0) {
+                    breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
                 }
-                breakdownHTML += `<div class="machine-ratio">⚙️ Schleifmaschinen: ${schleifen}</div>`;
+                breakdownHTML += `<div class="machine-ratio">⚙️ CNC-Schleifmaschinen: ${schleifen}</div>`;
                 document.getElementById('breakdown').innerHTML = breakdownHTML;
                 return;
             }
 
             const industry = document.getElementById('industry').value;
             const shifts = parseFloat(document.getElementById('shifts').value);
-            const sonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
-            const additionalSpanner = parseInt(document.getElementById('standardSpt').value) || 0;
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const evoCompetitor = document.getElementById('evoCompetitor').value;
             
-            // Automatische Evo Grip Berechnung
-            const baseEvoGrip = frasen; // Pro Fräsmaschine 1 Evo Grip
-            const totalEvoGrip = baseEvoGrip + additionalSpanner;
+            // Automatische Evo Grip Berechnung (1 pro Fräsmaschine)
+            const baseEvoGrip = frasen;
             
-            // Zusätzliche Soner SPT von Schleifmaschinen
-            const schleifSpt = schleifen * 5000;
+            // Automatische Sonder SPT pro Drehmaschine (1.500€ x Anzahl)
+            const autoSonderSpt = drehen * 1500;
+            const totalSonderSpt = manualSonderSpt + autoSonderSpt;
+            
+            // Zusätzliche Soner SPT von Schleifmaschinen (€1.500 pro Maschine)
+            const schleifSpt = schleifen * 1500;
 
             // Material-Auswahl und Prozente
             const mat1 = document.getElementById('material1').value;
@@ -438,7 +429,6 @@
             const totalPercent = percent1 + percent2 + percent3;
             document.getElementById('percentInfo').textContent = totalPercent + '%';
 
-            // Warnung wenn nicht 100%
             const warningEl = document.getElementById('percentWarning');
             if (totalPercent !== 100) {
                 warningEl.classList.add('show');
@@ -464,17 +454,20 @@
             if (mat2) weightedMaterialFactor += (materials[mat2] || 1) * (percent2 / 100);
             if (mat3) weightedMaterialFactor += (materials[mat3] || 1) * (percent3 / 100);
 
-            // VERBRAUCHSWERKZEUGE (Basis-Potenzial)
-            const basePotential = Math.round(
-                totalMachines * 5000 * shifts * weightedMaterialFactor * factors[industry]
-            );
-
-            // Intelligente Verteilung
+            // Intelligente Verteilung nach Maschinentyp
             const drehAnteil = drehen / totalMachines;
             const fraesAnteil = frasen / totalMachines;
 
-            const drehenDist = { gew: 0.35, fra: 0.20, boh: 0.35 };
-            const fraesenDist = { gew: 0.10, fra: 0.45, boh: 0.25 };
+            // NEUE BASIS-WERTE: Drehen 4.000€, Fräsen 7.000€ (100% Verbrauchswerkzeuge)
+            const drehPotential = Math.round(drehen * 4000 * shifts * weightedMaterialFactor * factors[industry]);
+            const fraenPotential = Math.round(frasen * 7000 * shifts * weightedMaterialFactor * factors[industry]);
+            const basePotential = drehPotential + fraenPotential;
+
+            // Werkzeug-Verteilung (100% - Spanntechnik raus)
+            // Drehen: 35/90 = 38.89%, 20/90 = 22.22%, 35/90 = 38.89%
+            // Fräsen: 10/80 = 12.5%, 45/80 = 56.25%, 25/80 = 31.25%
+            const drehenDist = { gew: 0.3889, fra: 0.2222, boh: 0.3889 };
+            const fraesenDist = { gew: 0.125, fra: 0.5625, boh: 0.3125 };
 
             const gew = (drehAnteil * drehenDist.gew) + (fraesAnteil * fraesenDist.gew);
             const fra = (drehAnteil * drehenDist.fra) + (fraesAnteil * fraesenDist.fra);
@@ -483,13 +476,11 @@
             const breakdown = {
                 'Emuge Gewindetechnik': Math.round(basePotential * gew),
                 'Franken Frästechnik': Math.round(basePotential * fra),
-                'Emuge VHM Bohrtechnik': Math.round(basePotential * boh),
-                'Sonder SPT': sonderSpt,
-                'Standard SPT (Evo Grip)': standardSpt
+                'Emuge VHM Bohrtechnik': Math.round(basePotential * boh)
             };
 
             // GESAMT-POTENZIAL = Verbrauch + Sonder SPT + Schleif-SPT
-            const totalSpt = sonderSpt + schleifSpt;
+            const totalSpt = totalSonderSpt + schleifSpt;
             const totalPotential = basePotential + totalSpt;
 
             let klasse, color;
@@ -503,14 +494,11 @@
             document.getElementById('resultValue').textContent = `€ ${(totalPotential / 1000).toFixed(0)}k`;
             document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
             
-            let breakdownHTML = '<strong>📊 Verbrauchswerkzeuge:</strong><br>';
+            let breakdownHTML = '<strong>📊 Verbrauchswerkzeuge (100%):</strong><br>';
             
-            // Verbrauchswerkzeuge
             for (let [key, val] of Object.entries(breakdown)) {
-                if (!['Sonder SPT', 'Standard SPT (Evo Grip)'].includes(key)) {
-                    const pct = ((val / basePotential) * 100).toFixed(0);
-                    breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')} (${pct}%)</strong></div>`;
-                }
+                const pct = ((val / basePotential) * 100).toFixed(0);
+                breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')} (${pct}%)</strong></div>`;
             }
 
             // Material-Info
@@ -522,20 +510,28 @@
             breakdownHTML += `<div class="material-ratio">📦 Material: ${materialInfo}<br>Gewichteter Faktor: ${weightedMaterialFactor.toFixed(2)}</div>`;
 
             // Spanntechnik separat
-            breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK (Investition):</div>`;
-            if (sonderSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT</span><strong>€ ${sonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK:</div>`;
+            if (autoSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (${drehen}x CNC-Drehmaschinen à €1.500)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (manualSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
             }
             if (schleifSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>Schleifmaschinen SPT (${schleifen}x à €5.000)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+                breakdownHTML += `<div class="breakdown-item"><span>CNC-Schleifmaschinen SPT (${schleifen}x à €1.500)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
             }
-            breakdownHTML += `<div class="breakdown-item"><span>Standard SPT (Evo Grip)</span><strong>${totalEvoGrip} Stück (${baseEvoGrip} auto + ${additionalSpanner} extra)</strong></div>`;
+            if (baseEvoGrip > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Evo Grip</span><strong>${baseEvoGrip} Spanner</strong></div>`;
+            }
+            if (evoCompetitor) {
+                breakdownHTML += `<div class="breakdown-item"><span>Haupt Wettbewerb</span><strong>${evoCompetitor}</strong></div>`;
+            }
             breakdownHTML += `</div>`;
             
             // Maschinenanteil
-            let machineInfo = `🔄 Drehen: ${(drehAnteil * 100).toFixed(0)}% | 🔪 Fräsen: ${(fraesAnteil * 100).toFixed(0)}%`;
+            let machineInfo = `🔄 CNC-Drehmaschinen: ${drehen} | 🔪 CNC-Fräsmaschinen: ${frasen}`;
             if (schleifen > 0) {
-                machineInfo += ` | ⚙️ Schleifen: ${schleifen}x`;
+                machineInfo += ` | ⚙️ CNC-Schleifmaschinen: ${schleifen}`;
             }
             breakdownHTML += `<div class="machine-ratio">${machineInfo}</div>`;
             
@@ -553,19 +549,25 @@
             const potenzialMatch = potenzialText.match(/(\d+)/);
             const potenzial = potenzialMatch ? parseInt(potenzialMatch[1]) * 1000 : 0;
 
+            const drehen = parseFloat(document.getElementById('drehen').value) || 0;
+            const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const autoSonderSpt = drehen * 1500;
+            const baseEvoGrip = frasen;
+
             const data = {
                 kundenname: document.getElementById('customerName').value,
                 kundennummer: document.getElementById('customerNumber').value,
                 branche: document.getElementById('industry').value,
-                drehen: parseFloat(document.getElementById('drehen').value) || 0,
+                drehen: drehen,
                 frasen: parseFloat(document.getElementById('frasen').value) || 0,
                 schleifen: parseFloat(document.getElementById('schleifen').value) || 0,
                 material: `${document.getElementById('percent1').value}% ${document.querySelector(`#material1 option[value="${document.getElementById('material1').value}"]`).textContent}` +
                           (document.getElementById('material2').value && document.getElementById('percent2').value > 0 ? ` / ${document.getElementById('percent2').value}% ${document.querySelector(`#material2 option[value="${document.getElementById('material2').value}"]`).textContent}` : "") +
                           (document.getElementById('material3').value && document.getElementById('percent3').value > 0 ? ` / ${document.getElementById('percent3').value}% ${document.querySelector(`#material3 option[value="${document.getElementById('material3').value}"]`).textContent}` : ""),
                 shifts: document.getElementById('shifts').value,
-                sonderSpt: parseInt(document.getElementById('sonderSpt').value) || 0,
-                standardSpt: `${parseFloat(document.getElementById('frasen').value) || 0} + ${parseInt(document.getElementById('standardSpt').value) || 0} = ${(parseFloat(document.getElementById('frasen').value) || 0) + (parseInt(document.getElementById('standardSpt').value) || 0)} Evo Grip`,
+                sonderSpt: `${autoSonderSpt > 0 ? `${drehen}x CNC-Drehmaschinen à €1.500 = €` + autoSonderSpt : '€0'}${manualSonderSpt > 0 ? ' + €' + manualSonderSpt : ''} = €${autoSonderSpt + manualSonderSpt}`,
+                standardSpt: `${baseEvoGrip} Spanner - Wettbewerb: ${document.getElementById('evoCompetitor').value || 'keine Angabe'}`,
                 potenzial: potenzial,
                 klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
             };
