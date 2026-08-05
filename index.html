@@ -84,6 +84,42 @@
             border-color: #ea580c;
             box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
         }
+        .material-section {
+            background: rgba(234, 88, 12, 0.05);
+            border-left: 3px solid #ea580c;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .material-item {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .material-item label {
+            margin-bottom: 4px;
+        }
+        .percent-warning {
+            background: #ef4444;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        .percent-warning.show {
+            display: block;
+        }
+        .percent-info {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
         .result {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border-radius: 12px;
@@ -211,27 +247,76 @@
 
             <div class="input-row">
                 <div class="input-group">
-                    <label>🔄 Drehmaschinen</label>
+                    <label>🔄 CNC-Drehmaschinen</label>
                     <input type="number" id="drehen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
                 </div>
                 <div class="input-group">
-                    <label>🔪 Fräsmaschinen</label>
-                    <input type="number" id="frasen" value="15" min="0" onchange="updateResult()" oninput="updateResult()">
+                    <label>🔪 CNC-Fräsmaschinen</label>
+                    <input type="number" id="frasen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
                 </div>
             </div>
 
             <div class="input-group">
-                <label>🔩 Material</label>
-                <select id="material" onchange="updateResult()">
-                    <option value="kunst">Kunststoff</option>
-                    <option value="alu">Aluminium</option>
-                    <option value="guss">Guss</option>
-                    <option value="stahl">Stahl</option>
-                    <option value="verguet">Vergütungsstahl</option>
-                    <option value="edel">Edelstahl</option>
-                    <option value="titan">Titan</option>
-                    <option value="inconel">Inconel/Ni-Basis</option>
-                </select>
+                <label>⚙️ CNC-Schleifmaschinen</label>
+                <input type="number" id="schleifen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
+            </div>
+
+            <!-- MATERIAL SECTION -->
+            <div class="material-section">
+                <label style="display: block; margin-bottom: 12px; color: #fbbf24;">🔩 Material (bis zu 3)</label>
+                
+                <!-- Material 1 -->
+                <div class="material-item">
+                    <label>Material 1</label>
+                    <select id="material1" onchange="updateResult()">
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl" selected>Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent1" value="100" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 2 -->
+                <div class="material-item">
+                    <label>Material 2 (optional)</label>
+                    <select id="material2" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent2" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 3 -->
+                <div class="material-item">
+                    <label>Material 3 (optional)</label>
+                    <select id="material3" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent3" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <div id="percentWarning" class="percent-warning">⚠️ Prozente müssen zusammen 100% ergeben!</div>
+                <div class="percent-info">ℹ️ <span id="percentInfo">100%</span> gesamt</div>
             </div>
 
             <div class="input-group">
@@ -243,28 +328,15 @@
                 </select>
             </div>
 
-            <div class="section-header">💰 Spanntechnik</div>
-
             <div class="input-group">
-                <label>🔗 Sonder SPT</label>
-                <select id="sonderSpt" onchange="updateResult()">
-                    <option value="0">Kein Potenzial</option>
-                    <option value="15000">15 bis 30.000€</option>
-                    <option value="30000">30 bis 50.000€</option>
-                    <option value="50000">50 bis 100.000€</option>
-                    <option value="100000">mehr als 100.000€</option>
-                </select>
+                <label>🔗 Sonder SPT (Euro-Bedarf)</label>
+                <input type="number" id="sonderSpt" value="0" min="0" onchange="updateResult()" oninput="updateResult()" placeholder="€ Euro">
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">ℹ️ Automatisch +€1.500 pro Drehmaschine und Schleifmaschine</p>
             </div>
 
             <div class="input-group">
-                <label>🔗 Standard SPT (Evo Grip)</label>
-                <select id="standardSpt" onchange="updateResult()">
-                    <option value="5-10">5 bis 10 Evo Grip</option>
-                    <option value="10-15">10 bis 15 Evo Grip</option>
-                    <option value="15-20">15 bis 20 Evo Grip</option>
-                    <option value="20-30">20 bis 30 Evo Grip</option>
-                    <option value="30+">mehr als 30 Evo Grip</option>
-                </select>
+                <label>🔗 Haupt Wettbewerb (Evo Grip)</label>
+                <input type="text" id="evoCompetitor" placeholder="z.B. SCHUNK, JACOB, ROHM" onchange="updateResult()" oninput="updateResult()">
             </div>
         </div>
 
@@ -293,19 +365,76 @@
         function updateResult() {
             const drehen = parseFloat(document.getElementById('drehen').value) || 0;
             const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const schleifen = parseFloat(document.getElementById('schleifen').value) || 0;
             const totalMachines = drehen + frasen;
 
-            if (totalMachines === 0) {
+            if (totalMachines === 0 && schleifen === 0) {
                 document.getElementById('resultValue').textContent = '€ 0';
                 document.getElementById('resultClass').textContent = 'Keine Maschinen';
                 return;
             }
 
+            // Nur Schleifmaschinen → direkt zu Sonder SPT
+            if (totalMachines === 0 && schleifen > 0) {
+                const schleifSpt = schleifen * 1500;
+                const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+                const autoSonderSpt = 1500; // Automatisch für Schleifen
+                const totalSpt = schleifSpt + manualSonderSpt + autoSonderSpt;
+                
+                let klasse, color;
+                if (totalSpt >= 150000) { klasse = 'A'; color = '#10b981'; }
+                else if (totalSpt >= 75000) { klasse = 'B'; color = '#3b82f6'; }
+                else if (totalSpt >= 25000) { klasse = 'C'; color = '#eab308'; }
+                else if (totalSpt >= 5000) { klasse = 'D'; color = '#f97316'; }
+                else { klasse = 'E'; color = '#6b7280'; }
+
+                document.getElementById('resultCard').style.background = `linear-gradient(135deg, ${color}dd 0%, ${color} 100%)`;
+                document.getElementById('resultValue').textContent = `€ ${(totalSpt / 1000).toFixed(0)}k`;
+                document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
+                
+                let breakdownHTML = '<strong>⚙️ CNC-Schleifmaschinen:</strong><br>';
+                breakdownHTML += `<div class="breakdown-item"><span>${schleifen}x CNC-Schleifmaschine à € 1.500</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (automatisch)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+                if (manualSonderSpt > 0) {
+                    breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+                }
+                breakdownHTML += `<div class="machine-ratio">⚙️ CNC-Schleifmaschinen: ${schleifen}</div>`;
+                document.getElementById('breakdown').innerHTML = breakdownHTML;
+                return;
+            }
+
             const industry = document.getElementById('industry').value;
-            const material = document.getElementById('material').value;
             const shifts = parseFloat(document.getElementById('shifts').value);
-            const sonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
-            const standardSpt = document.getElementById('standardSpt').value;
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const evoCompetitor = document.getElementById('evoCompetitor').value;
+            
+            // Automatische Evo Grip Berechnung (1 pro Fräsmaschine)
+            const baseEvoGrip = frasen;
+            
+            // Automatische Sonder SPT pro Drehmaschine (1.500€ x Anzahl)
+            const autoSonderSpt = drehen * 1500;
+            const totalSonderSpt = manualSonderSpt + autoSonderSpt;
+            
+            // Zusätzliche Soner SPT von Schleifmaschinen (€1.500 pro Maschine)
+            const schleifSpt = schleifen * 1500;
+
+            // Material-Auswahl und Prozente
+            const mat1 = document.getElementById('material1').value;
+            const percent1 = parseFloat(document.getElementById('percent1').value) || 0;
+            const mat2 = document.getElementById('material2').value;
+            const percent2 = parseFloat(document.getElementById('percent2').value) || 0;
+            const mat3 = document.getElementById('material3').value;
+            const percent3 = parseFloat(document.getElementById('percent3').value) || 0;
+
+            const totalPercent = percent1 + percent2 + percent3;
+            document.getElementById('percentInfo').textContent = totalPercent + '%';
+
+            const warningEl = document.getElementById('percentWarning');
+            if (totalPercent !== 100) {
+                warningEl.classList.add('show');
+            } else {
+                warningEl.classList.remove('show');
+            }
 
             const factors = {
                 auto: 1.0, zweirad: 0.9, schiene: 1.1, schiff: 1.2, luft: 1.3, land: 0.95,
@@ -319,17 +448,26 @@
                 edel: 1.30, titan: 1.90, inconel: 2.50
             };
 
-            // VERBRAUCHSWERKZEUGE (Basis-Potenzial)
-            const basePotential = Math.round(
-                totalMachines * 5000 * shifts * materials[material] * factors[industry]
-            );
+            // Gewichteter Materialfaktor
+            let weightedMaterialFactor = 0;
+            if (mat1) weightedMaterialFactor += (materials[mat1] || 1) * (percent1 / 100);
+            if (mat2) weightedMaterialFactor += (materials[mat2] || 1) * (percent2 / 100);
+            if (mat3) weightedMaterialFactor += (materials[mat3] || 1) * (percent3 / 100);
 
-            // Intelligente Verteilung
+            // Intelligente Verteilung nach Maschinentyp
             const drehAnteil = drehen / totalMachines;
             const fraesAnteil = frasen / totalMachines;
 
-            const drehenDist = { gew: 0.35, fra: 0.20, boh: 0.35 };
-            const fraesenDist = { gew: 0.10, fra: 0.45, boh: 0.25 };
+            // NEUE BASIS-WERTE: Drehen 4.000€, Fräsen 7.000€ (100% Verbrauchswerkzeuge)
+            const drehPotential = Math.round(drehen * 4000 * shifts * weightedMaterialFactor * factors[industry]);
+            const fraenPotential = Math.round(frasen * 7000 * shifts * weightedMaterialFactor * factors[industry]);
+            const basePotential = drehPotential + fraenPotential;
+
+            // Werkzeug-Verteilung (100% - Spanntechnik raus)
+            // Drehen: 35/90 = 38.89%, 20/90 = 22.22%, 35/90 = 38.89%
+            // Fräsen: 10/80 = 12.5%, 45/80 = 56.25%, 25/80 = 31.25%
+            const drehenDist = { gew: 0.3889, fra: 0.2222, boh: 0.3889 };
+            const fraesenDist = { gew: 0.125, fra: 0.5625, boh: 0.3125 };
 
             const gew = (drehAnteil * drehenDist.gew) + (fraesAnteil * fraesenDist.gew);
             const fra = (drehAnteil * drehenDist.fra) + (fraesAnteil * fraesenDist.fra);
@@ -338,13 +476,12 @@
             const breakdown = {
                 'Emuge Gewindetechnik': Math.round(basePotential * gew),
                 'Franken Frästechnik': Math.round(basePotential * fra),
-                'Emuge VHM Bohrtechnik': Math.round(basePotential * boh),
-                'Sonder SPT': sonderSpt,
-                'Standard SPT (Evo Grip)': standardSpt
+                'Emuge VHM Bohrtechnik': Math.round(basePotential * boh)
             };
 
-            // GESAMT-POTENZIAL = Verbrauch + Sonder SPT
-            const totalPotential = basePotential + sonderSpt;
+            // GESAMT-POTENZIAL = Verbrauch + Sonder SPT + Schleif-SPT
+            const totalSpt = totalSonderSpt + schleifSpt;
+            const totalPotential = basePotential + totalSpt;
 
             let klasse, color;
             if (totalPotential >= 150000) { klasse = 'A'; color = '#10b981'; }
@@ -357,26 +494,46 @@
             document.getElementById('resultValue').textContent = `€ ${(totalPotential / 1000).toFixed(0)}k`;
             document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
             
-            let breakdownHTML = '<strong>📊 Verbrauchswerkzeuge:</strong><br>';
+            let breakdownHTML = '<strong>📊 Verbrauchswerkzeuge (100%):</strong><br>';
             
-            // Verbrauchswerkzeuge
             for (let [key, val] of Object.entries(breakdown)) {
-                if (!['Sonder SPT', 'Standard SPT (Evo Grip)'].includes(key)) {
-                    const pct = ((val / basePotential) * 100).toFixed(0);
-                    breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')} (${pct}%)</strong></div>`;
-                }
+                const pct = ((val / basePotential) * 100).toFixed(0);
+                breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')} (${pct}%)</strong></div>`;
             }
 
+            // Material-Info
+            let materialInfo = '';
+            if (mat1) materialInfo += `${percent1}% ${document.querySelector(`#material1 option[value="${mat1}"]`).textContent}`;
+            if (mat2 && percent2 > 0) materialInfo += ` / ${percent2}% ${document.querySelector(`#material2 option[value="${mat2}"]`).textContent}`;
+            if (mat3 && percent3 > 0) materialInfo += ` / ${percent3}% ${document.querySelector(`#material3 option[value="${mat3}"]`).textContent}`;
+
+            breakdownHTML += `<div class="material-ratio">📦 Material: ${materialInfo}<br>Gewichteter Faktor: ${weightedMaterialFactor.toFixed(2)}</div>`;
+
             // Spanntechnik separat
-            breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK (Investition):</div>`;
-            if (sonderSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT</span><strong>€ ${breakdown['Sonder SPT'].toLocaleString('de-DE')}</strong></div>`;
+            breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK:</div>`;
+            if (autoSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (${drehen}x CNC-Drehmaschinen à €1.500)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
             }
-            breakdownHTML += `<div class="breakdown-item"><span>Standard SPT (${breakdown['Standard SPT (Evo Grip)']}) </span><strong>mit Evo Grip</strong></div>`;
+            if (manualSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (schleifSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>CNC-Schleifmaschinen SPT (${schleifen}x à €1.500)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (baseEvoGrip > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Evo Grip</span><strong>${baseEvoGrip} Spanner</strong></div>`;
+            }
+            if (evoCompetitor) {
+                breakdownHTML += `<div class="breakdown-item"><span>Haupt Wettbewerb</span><strong>${evoCompetitor}</strong></div>`;
+            }
             breakdownHTML += `</div>`;
             
             // Maschinenanteil
-            breakdownHTML += `<div class="machine-ratio">🔄 Drehen: ${(drehAnteil * 100).toFixed(0)}% | 🔪 Fräsen: ${(fraesAnteil * 100).toFixed(0)}%</div>`;
+            let machineInfo = `🔄 CNC-Drehmaschinen: ${drehen} | 🔪 CNC-Fräsmaschinen: ${frasen}`;
+            if (schleifen > 0) {
+                machineInfo += ` | ⚙️ CNC-Schleifmaschinen: ${schleifen}`;
+            }
+            breakdownHTML += `<div class="machine-ratio">${machineInfo}</div>`;
             
             document.getElementById('breakdown').innerHTML = breakdownHTML;
         }
@@ -388,28 +545,34 @@
                 return;
             }
 
-            // Potenzial aus dem Display extrahieren
             const potenzialText = document.getElementById('resultValue').textContent;
             const potenzialMatch = potenzialText.match(/(\d+)/);
             const potenzial = potenzialMatch ? parseInt(potenzialMatch[1]) * 1000 : 0;
 
-            // Alle Daten sammeln
+            const drehen = parseFloat(document.getElementById('drehen').value) || 0;
+            const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const autoSonderSpt = drehen * 1500;
+            const baseEvoGrip = frasen;
+
             const data = {
                 kundenname: document.getElementById('customerName').value,
                 kundennummer: document.getElementById('customerNumber').value,
                 branche: document.getElementById('industry').value,
-                drehen: parseFloat(document.getElementById('drehen').value) || 0,
+                drehen: drehen,
                 frasen: parseFloat(document.getElementById('frasen').value) || 0,
-                material: document.getElementById('material').value,
+                schleifen: parseFloat(document.getElementById('schleifen').value) || 0,
+                material: `${document.getElementById('percent1').value}% ${document.querySelector(`#material1 option[value="${document.getElementById('material1').value}"]`).textContent}` +
+                          (document.getElementById('material2').value && document.getElementById('percent2').value > 0 ? ` / ${document.getElementById('percent2').value}% ${document.querySelector(`#material2 option[value="${document.getElementById('material2').value}"]`).textContent}` : "") +
+                          (document.getElementById('material3').value && document.getElementById('percent3').value > 0 ? ` / ${document.getElementById('percent3').value}% ${document.querySelector(`#material3 option[value="${document.getElementById('material3').value}"]`).textContent}` : ""),
                 shifts: document.getElementById('shifts').value,
-                sonderSpt: parseInt(document.getElementById('sonderSpt').value) || 0,
-                standardSpt: document.getElementById('standardSpt').value,
+                sonderSpt: `${autoSonderSpt > 0 ? `${drehen}x CNC-Drehmaschinen à €1.500 = €` + autoSonderSpt : '€0'}${manualSonderSpt > 0 ? ' + €' + manualSonderSpt : ''} = €${autoSonderSpt + manualSonderSpt}`,
+                standardSpt: `${baseEvoGrip} Spanner - Wettbewerb: ${document.getElementById('evoCompetitor').value || 'keine Angabe'}`,
                 potenzial: potenzial,
                 klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
             };
 
-            // An Google Apps Script senden
-            fetch('https://script.google.com/macros/s/AKfycbxG_WQj3x4-hT0ze9wYojM_zvDS23Ap4t54h3RWo9Ve0Z-oIUtppTfjNdvbaRKAuo8q/exec', {
+            fetch('https://script.google.com/macros/s/AKfycbwl4CKkyJZaUxOm5y5BkK9zFvPM8IMaf6TojS45QnUsFuLSR_VcHYkzc-Q3UeCbbe7G/exec', {
                 method: 'POST',
                 body: JSON.stringify(data)
             })
