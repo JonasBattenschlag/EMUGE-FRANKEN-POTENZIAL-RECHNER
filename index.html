@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMUGE Potenzial-Kalkulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        header {
+            background: linear-gradient(90deg, #ea580c 0%, #c2410c 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #22c55e;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+        .input-row .input-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ea580c;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+        }
+        .material-section {
+            background: rgba(234, 88, 12, 0.05);
+            border-left: 3px solid #ea580c;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .material-item {
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .material-item label {
+            margin-bottom: 4px;
+        }
+        .percent-warning {
+            background: #ef4444;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        .percent-warning.show {
+            display: block;
+        }
+        .percent-info {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .result {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .result-value {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 16px 0;
+        }
+        .result-class {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #ea580c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 16px;
+            min-height: 48px;
+        }
+        button:hover {
+            background: #c2410c;
+        }
+        button:active {
+            background: #92300c;
+        }
+        .breakdown {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+        .breakdown-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .breakdown-section-title {
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .machine-ratio {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .section-header {
+            background: rgba(234, 88, 12, 0.1);
+            border-left: 3px solid #ea580c;
+            padding: 12px;
+            margin: 16px 0 12px 0;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+            <span style="font-size: 48px;">🔧</span>
+            <div>
+                <h1>Potenzial-Kalkulator</h1>
+                <p>EMUGE FRANKEN</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>📊 Eingabe</h2>
+            
+            <div class="input-group">
+                <label>🏭 Branche</label>
+                <select id="industry" onchange="updateResult()">
+                    <option value="auto">Automobil</option>
+                    <option value="zweirad">Zweirad</option>
+                    <option value="schiene">Schiene</option>
+                    <option value="schiff">Schiffbau</option>
+                    <option value="luft">Luft- und Raumfahrt</option>
+                    <option value="land">Landtechnik/Bauwesen</option>
+                    <option value="lohn">Lohnfertiger</option>
+                    <option value="masch">Allg. Maschinen- und Anlagenbau</option>
+                    <option value="form">Werkzeug-/Formenbau</option>
+                    <option value="elektro">Elektro-Industrie</option>
+                    <option value="wz">Werkzeughersteller</option>
+                    <option value="mikro">Mikrotechnik/Unterhaltungselektronik</option>
+                    <option value="oem">OEM-Kunden</option>
+                    <option value="bau">Bau-Industrie</option>
+                    <option value="milvh">Militärische Fahrzeuge</option>
+                    <option value="milfl">Militärische Fluggeräte</option>
+                    <option value="mun">Munition und Waffen</option>
+                    <option value="med">Medizintechnik</option>
+                    <option value="dental">Dental</option>
+                    <option value="kraft">Kraftwerkstechnologie</option>
+                    <option value="wind">Windkraft</option>
+                    <option value="oilgas">Öl & Gas</option>
+                </select>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>🔄 CNC-Drehmaschinen</label>
+                    <input type="number" id="drehen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
+                </div>
+                <div class="input-group">
+                    <label>🔪 CNC-Fräsmaschinen</label>
+                    <input type="number" id="frasen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>⚙️ CNC-Schleifmaschinen</label>
+                <input type="number" id="schleifen" value="0" min="0" onchange="updateResult()" oninput="updateResult()">
+            </div>
+
+            <!-- MATERIAL SECTION -->
+            <div class="material-section">
+                <label style="display: block; margin-bottom: 12px; color: #fbbf24;">🔩 Material (bis zu 3)</label>
+                
+                <!-- Material 1 -->
+                <div class="material-item">
+                    <label>Material 1</label>
+                    <select id="material1" onchange="updateResult()">
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl" selected>Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent1" value="100" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 2 -->
+                <div class="material-item">
+                    <label>Material 2 (optional)</label>
+                    <select id="material2" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent2" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <!-- Material 3 -->
+                <div class="material-item">
+                    <label>Material 3 (optional)</label>
+                    <select id="material3" onchange="updateResult()">
+                        <option value="">-- Nicht wählen --</option>
+                        <option value="kunst">Kunststoff</option>
+                        <option value="alu">Aluminium</option>
+                        <option value="guss">Guss</option>
+                        <option value="stahl">Stahl</option>
+                        <option value="verguet">Vergütungsstahl</option>
+                        <option value="edel">Edelstahl</option>
+                        <option value="titan">Titan</option>
+                        <option value="inconel">Inconel/Ni-Basis</option>
+                    </select>
+                    <input type="number" id="percent3" value="0" min="0" max="100" onchange="updateResult()" oninput="updateResult()" placeholder="%" style="margin-top: 8px;">
+                </div>
+
+                <div id="percentWarning" class="percent-warning">⚠️ Prozente müssen zusammen 100% ergeben!</div>
+                <div class="percent-info">ℹ️ <span id="percentInfo">100%</span> gesamt</div>
+            </div>
+
+            <div class="input-group">
+                <label>⏰ Schichtmodell</label>
+                <select id="shifts" onchange="updateResult()">
+                    <option value="1">1 Schicht</option>
+                    <option value="2">2 Schichten</option>
+                    <option value="3">3 Schichten</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>🔗 Sonder SPT (Euro-Bedarf)</label>
+                <input type="number" id="sonderSpt" value="0" min="0" onchange="updateResult()" oninput="updateResult()" placeholder="€ Euro">
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">ℹ️ Automatisch +€1.500 pro Drehmaschine und Schleifmaschine</p>
+            </div>
+
+            <div class="input-group">
+                <label>🔗 Haupt Wettbewerb (Evo Grip)</label>
+                <input type="text" id="evoCompetitor" placeholder="z.B. SCHUNK, JACOB, ROHM" onchange="updateResult()" oninput="updateResult()">
+            </div>
+        </div>
+
+        <div id="resultCard" class="result">
+            <p style="font-size: 12px; opacity: 0.8;">Jahrespotenzial</p>
+            <div class="result-value" id="resultValue">€ 75k</div>
+            <div class="result-class" id="resultClass">Klasse B</div>
+            <div class="breakdown" id="breakdown"></div>
+        </div>
+
+        <div class="card">
+            <h2>👤 Kunde speichern</h2>
+            <div class="input-group">
+                <label>Kundenname</label>
+                <input type="text" id="customerName" placeholder="z.B. Mayer GmbH">
+            </div>
+            <div class="input-group">
+                <label>Kundennummer (optional)</label>
+                <input type="text" id="customerNumber" placeholder="z.B. K-12345">
+            </div>
+            <button onclick="saveCustomer()">💾 Speichern</button>
+        </div>
+    </div>
+
+    <script>
+        function updateResult() {
+            const drehen = parseFloat(document.getElementById('drehen').value) || 0;
+            const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const schleifen = parseFloat(document.getElementById('schleifen').value) || 0;
+            const totalMachines = drehen + frasen;
+
+            if (totalMachines === 0 && schleifen === 0) {
+                document.getElementById('resultValue').textContent = '€ 0';
+                document.getElementById('resultClass').textContent = 'Keine Maschinen';
+                return;
+            }
+
+            // Nur Schleifmaschinen → direkt zu Sonder SPT
+            if (totalMachines === 0 && schleifen > 0) {
+                const schleifSpt = schleifen * 1500;
+                const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+                const autoSonderSpt = 1500; // Automatisch für Schleifen
+                const totalSpt = schleifSpt + manualSonderSpt + autoSonderSpt;
+                
+                let klasse, color;
+                if (totalSpt >= 150000) { klasse = 'A'; color = '#10b981'; }
+                else if (totalSpt >= 75000) { klasse = 'B'; color = '#3b82f6'; }
+                else if (totalSpt >= 25000) { klasse = 'C'; color = '#eab308'; }
+                else if (totalSpt >= 5000) { klasse = 'D'; color = '#f97316'; }
+                else { klasse = 'E'; color = '#6b7280'; }
+
+                document.getElementById('resultCard').style.background = `linear-gradient(135deg, ${color}dd 0%, ${color} 100%)`;
+                document.getElementById('resultValue').textContent = `€ ${(totalSpt / 1000).toFixed(0)}k`;
+                document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
+                
+                let breakdownHTML = '<strong>⚙️ CNC-Schleifmaschinen:</strong><br>';
+                breakdownHTML += `<div class="breakdown-item"><span>${schleifen}x CNC-Schleifmaschine à € 1.500</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (automatisch)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+                if (manualSonderSpt > 0) {
+                    breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+                }
+                breakdownHTML += `<div class="machine-ratio">⚙️ CNC-Schleifmaschinen: ${schleifen}</div>`;
+                document.getElementById('breakdown').innerHTML = breakdownHTML;
+                return;
+            }
+
+            const industry = document.getElementById('industry').value;
+            const shifts = parseFloat(document.getElementById('shifts').value);
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const evoCompetitor = document.getElementById('evoCompetitor').value;
+            
+            // Automatische Evo Grip Berechnung (1 pro Fräsmaschine)
+            const baseEvoGrip = frasen;
+            
+            // Automatische Sonder SPT pro Drehmaschine (1.500€ x Anzahl)
+            const autoSonderSpt = drehen * 1500;
+            const totalSonderSpt = manualSonderSpt + autoSonderSpt;
+            
+            // Zusätzliche Soner SPT von Schleifmaschinen (€1.500 pro Maschine)
+            const schleifSpt = schleifen * 1500;
+
+            // Material-Auswahl und Prozente
+            const mat1 = document.getElementById('material1').value;
+            const percent1 = parseFloat(document.getElementById('percent1').value) || 0;
+            const mat2 = document.getElementById('material2').value;
+            const percent2 = parseFloat(document.getElementById('percent2').value) || 0;
+            const mat3 = document.getElementById('material3').value;
+            const percent3 = parseFloat(document.getElementById('percent3').value) || 0;
+
+            const totalPercent = percent1 + percent2 + percent3;
+            document.getElementById('percentInfo').textContent = totalPercent + '%';
+
+            const warningEl = document.getElementById('percentWarning');
+            if (totalPercent !== 100) {
+                warningEl.classList.add('show');
+            } else {
+                warningEl.classList.remove('show');
+            }
+
+            const factors = {
+                auto: 1.0, zweirad: 0.9, schiene: 1.1, schiff: 1.2, luft: 1.3, land: 0.95,
+                lohn: 1.1, masch: 1.0, form: 1.05, elektro: 1.0, wz: 1.15, mikro: 1.2,
+                oem: 1.05, bau: 0.9, milvh: 1.25, milfl: 1.35, mun: 1.3, med: 1.2,
+                dental: 1.15, kraft: 1.1, wind: 1.05, oilgas: 1.15
+            };
+
+            const materials = {
+                kunst: 0.60, alu: 0.65, guss: 0.95, stahl: 1.0, verguet: 1.20,
+                edel: 1.30, titan: 1.90, inconel: 2.50
+            };
+
+            // Gewichteter Materialfaktor
+            let weightedMaterialFactor = 0;
+            if (mat1) weightedMaterialFactor += (materials[mat1] || 1) * (percent1 / 100);
+            if (mat2) weightedMaterialFactor += (materials[mat2] || 1) * (percent2 / 100);
+            if (mat3) weightedMaterialFactor += (materials[mat3] || 1) * (percent3 / 100);
+
+            // Intelligente Verteilung nach Maschinentyp
+            const drehAnteil = drehen / totalMachines;
+            const fraesAnteil = frasen / totalMachines;
+
+            // NEUE BASIS-WERTE: Drehen 4.000€, Fräsen 7.000€ (100% Verbrauchswerkzeuge)
+            const drehPotential = Math.round(drehen * 4000 * shifts * weightedMaterialFactor * factors[industry]);
+            const fraenPotential = Math.round(frasen * 7000 * shifts * weightedMaterialFactor * factors[industry]);
+            const basePotential = drehPotential + fraenPotential;
+
+            // Werkzeug-Verteilung (100% - Spanntechnik raus)
+            // Drehen: 35/90 = 38.89%, 20/90 = 22.22%, 35/90 = 38.89%
+            // Fräsen: 10/80 = 12.5%, 45/80 = 56.25%, 25/80 = 31.25%
+            const drehenDist = { gew: 0.3889, fra: 0.2222, boh: 0.3889 };
+            const fraesenDist = { gew: 0.125, fra: 0.5625, boh: 0.3125 };
+
+            const gew = (drehAnteil * drehenDist.gew) + (fraesAnteil * fraesenDist.gew);
+            const fra = (drehAnteil * drehenDist.fra) + (fraesAnteil * fraesenDist.fra);
+            const boh = (drehAnteil * drehenDist.boh) + (fraesAnteil * fraesenDist.boh);
+
+            const breakdown = {
+                'Emuge Gewindetechnik': Math.round(basePotential * gew),
+                'Franken Frästechnik': Math.round(basePotential * fra),
+                'Emuge VHM Bohrtechnik': Math.round(basePotential * boh)
+            };
+
+            // GESAMT-POTENZIAL = Verbrauch + Sonder SPT + Schleif-SPT
+            const totalSpt = totalSonderSpt + schleifSpt;
+            const totalPotential = basePotential + totalSpt;
+
+            let klasse, color;
+            if (totalPotential >= 150000) { klasse = 'A'; color = '#10b981'; }
+            else if (totalPotential >= 75000) { klasse = 'B'; color = '#3b82f6'; }
+            else if (totalPotential >= 25000) { klasse = 'C'; color = '#eab308'; }
+            else if (totalPotential >= 5000) { klasse = 'D'; color = '#f97316'; }
+            else { klasse = 'E'; color = '#6b7280'; }
+
+            document.getElementById('resultCard').style.background = `linear-gradient(135deg, ${color}dd 0%, ${color} 100%)`;
+            document.getElementById('resultValue').textContent = `€ ${(totalPotential / 1000).toFixed(0)}k`;
+            document.getElementById('resultClass').textContent = `Klasse ${klasse}`;
+            
+            let breakdownHTML = '<strong>📊 Verbrauchswerkzeuge (100%):</strong><br>';
+            
+            for (let [key, val] of Object.entries(breakdown)) {
+                const pct = ((val / basePotential) * 100).toFixed(0);
+                breakdownHTML += `<div class="breakdown-item"><span>${key}</span><strong>€ ${val.toLocaleString('de-DE')} (${pct}%)</strong></div>`;
+            }
+
+            // Material-Info
+            let materialInfo = '';
+            if (mat1) materialInfo += `${percent1}% ${document.querySelector(`#material1 option[value="${mat1}"]`).textContent}`;
+            if (mat2 && percent2 > 0) materialInfo += ` / ${percent2}% ${document.querySelector(`#material2 option[value="${mat2}"]`).textContent}`;
+            if (mat3 && percent3 > 0) materialInfo += ` / ${percent3}% ${document.querySelector(`#material3 option[value="${mat3}"]`).textContent}`;
+
+            breakdownHTML += `<div class="material-ratio">📦 Material: ${materialInfo}<br>Gewichteter Faktor: ${weightedMaterialFactor.toFixed(2)}</div>`;
+
+            // Spanntechnik separat
+            breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK:</div>`;
+            if (autoSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (${drehen}x CNC-Drehmaschinen à €1.500)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (manualSonderSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (schleifSpt > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>CNC-Schleifmaschinen SPT (${schleifen}x à €1.500)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
+            }
+            if (baseEvoGrip > 0) {
+                breakdownHTML += `<div class="breakdown-item"><span>Evo Grip</span><strong>${baseEvoGrip} Spanner</strong></div>`;
+            }
+            if (evoCompetitor) {
+                breakdownHTML += `<div class="breakdown-item"><span>Haupt Wettbewerb</span><strong>${evoCompetitor}</strong></div>`;
+            }
+            breakdownHTML += `</div>`;
+            
+            // Maschinenanteil
+            let machineInfo = `🔄 CNC-Drehmaschinen: ${drehen} | 🔪 CNC-Fräsmaschinen: ${frasen}`;
+            if (schleifen > 0) {
+                machineInfo += ` | ⚙️ CNC-Schleifmaschinen: ${schleifen}`;
+            }
+            breakdownHTML += `<div class="machine-ratio">${machineInfo}</div>`;
+            
+            document.getElementById('breakdown').innerHTML = breakdownHTML;
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('customerName').value;
+            if (!name) {
+                alert('Kundennamen eingeben!');
+                return;
+            }
+
+            const potenzialText = document.getElementById('resultValue').textContent;
+            const potenzialMatch = potenzialText.match(/(\d+)/);
+            const potenzial = potenzialMatch ? parseInt(potenzialMatch[1]) * 1000 : 0;
+
+            const drehen = parseFloat(document.getElementById('drehen').value) || 0;
+            const frasen = parseFloat(document.getElementById('frasen').value) || 0;
+            const manualSonderSpt = parseInt(document.getElementById('sonderSpt').value) || 0;
+            const autoSonderSpt = drehen * 1500;
+            const baseEvoGrip = frasen;
+
+            const data = {
+                kundenname: document.getElementById('customerName').value,
+                kundennummer: document.getElementById('customerNumber').value,
+                branche: document.getElementById('industry').value,
+                drehen: drehen,
+                frasen: parseFloat(document.getElementById('frasen').value) || 0,
+                schleifen: parseFloat(document.getElementById('schleifen').value) || 0,
+                material: `${document.getElementById('percent1').value}% ${document.querySelector(`#material1 option[value="${document.getElementById('material1').value}"]`).textContent}` +
+                          (document.getElementById('material2').value && document.getElementById('percent2').value > 0 ? ` / ${document.getElementById('percent2').value}% ${document.querySelector(`#material2 option[value="${document.getElementById('material2').value}"]`).textContent}` : "") +
+                          (document.getElementById('material3').value && document.getElementById('percent3').value > 0 ? ` / ${document.getElementById('percent3').value}% ${document.querySelector(`#material3 option[value="${document.getElementById('material3').value}"]`).textContent}` : ""),
+                shifts: document.getElementById('shifts').value,
+                sonderSpt: `${autoSonderSpt > 0 ? `${drehen}x CNC-Drehmaschinen à €1.500 = €` + autoSonderSpt : '€0'}${manualSonderSpt > 0 ? ' + €' + manualSonderSpt : ''} = €${autoSonderSpt + manualSonderSpt}`,
+                standardSpt: `${baseEvoGrip} Spanner - Wettbewerb: ${document.getElementById('evoCompetitor').value || 'keine Angabe'}`,
+                potenzial: potenzial,
+                klasse: document.getElementById('resultClass').textContent.replace('Klasse ', '')
+            };
+
+            fetch('https://script.google.com/macros/s/AKfycbwl4CKkyJZaUxOm5y5BkK9zFvPM8IMaf6TojS45QnUsFuLSR_VcHYkzc-Q3UeCbbe7G/exec', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert(`✅ Kunde "${name}" in Google Sheets gespeichert!`);
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerNumber').value = '';
+                } else {
+                    alert(`❌ Fehler: ${result.message}`);
+                }
+            })
+            .catch(error => {
+                alert(`❌ Fehler beim Speichern: ${error.message}`);
+            });
+        }
+
+        updateResult();
+    </script>
+</body>
+</html>
