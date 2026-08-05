@@ -336,7 +336,7 @@
 
             <div class="input-group">
                 <label>🔗 Haupt Wettbewerb (Evo Grip)</label>
-                <input type="text" id="evoCompetitor" placeholder="z.B. SCHUNK, JACOB, ROHM" onchange="updateResult()" oninput="updateResult()">
+                <input type="text" id="evoCompetitor" placeholder="z.B. LANG, SCHUNK, Gressel, HWR, ALLMATIC" onchange="updateResult()" oninput="updateResult()">
             </div>
         </div>
 
@@ -511,14 +511,13 @@
 
             // Spanntechnik separat
             breakdownHTML += `<div class="breakdown-section"><div class="breakdown-section-title">💰 SPANNTECHNIK:</div>`;
-            if (autoSonderSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (${drehen}x CNC-Drehmaschinen à €1.500)</span><strong>€ ${autoSonderSpt.toLocaleString('de-DE')}</strong></div>`;
+            const totalDrehUndSchleifen = autoSonderSpt + schleifSpt;
+            if (totalDrehUndSchleifen > 0) {
+                const machineCount = drehen + schleifen;
+                breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (Dreh- und Schleifmaschinen ${machineCount}x à €1.500)</span><strong>€ ${totalDrehUndSchleifen.toLocaleString('de-DE')}</strong></div>`;
             }
             if (manualSonderSpt > 0) {
                 breakdownHTML += `<div class="breakdown-item"><span>Sonder SPT (zusätzlich)</span><strong>€ ${manualSonderSpt.toLocaleString('de-DE')}</strong></div>`;
-            }
-            if (schleifSpt > 0) {
-                breakdownHTML += `<div class="breakdown-item"><span>CNC-Schleifmaschinen SPT (${schleifen}x à €1.500)</span><strong>€ ${schleifSpt.toLocaleString('de-DE')}</strong></div>`;
             }
             if (baseEvoGrip > 0) {
                 breakdownHTML += `<div class="breakdown-item"><span>Evo Grip</span><strong>${baseEvoGrip} Spanner</strong></div>`;
